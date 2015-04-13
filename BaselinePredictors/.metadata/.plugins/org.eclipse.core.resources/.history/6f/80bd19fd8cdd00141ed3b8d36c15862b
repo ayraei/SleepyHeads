@@ -1,0 +1,11 @@
+import java.util.ArrayList;
+
+
+public class Movie {
+	/* Fields. */
+	/** User ID number **/
+	private int user;
+	
+	/** History of movie ratings. **/
+	
+}

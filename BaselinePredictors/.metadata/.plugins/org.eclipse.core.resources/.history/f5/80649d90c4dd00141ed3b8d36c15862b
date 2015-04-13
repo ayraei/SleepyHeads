@@ -1,0 +1,19 @@
+import java.io.BufferedReader;
+import java.util.HashMap;
+
+public class BaselinePredictorApp {
+	/* Fields */
+	/** Location of index file **/
+	private static String fileLoc = 
+			"/Users/debranangel/Documents/2014-15/CNS156b/um_sorted/trainingAll.dta";
+	
+	/** Collections of all user IDs and movie IDs. **/
+	public HashMap<Integer, UserProfile> allUsers;
+	public HashMap<Integer, MovieProfile> allMovies;
+
+	public static void main(String[] args) {
+		/* Read from file */
+		BufferedReader br = null;
+	}
+
+}

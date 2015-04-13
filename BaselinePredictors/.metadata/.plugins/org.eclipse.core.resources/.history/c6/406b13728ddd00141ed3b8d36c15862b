@@ -1,0 +1,37 @@
+import java.util.ArrayList;
+
+/** User-based object class **/
+public class User {
+	/* Fields. */
+	/** User ID number **/
+	private int user;
+	
+	/** History of movie ratings. **/
+	private ArrayList<int> ratingHistory;
+	
+	/* Methods. */
+	/** Check if user already exists. **/
+	
+	
+	/** Get user's history of movie ratings. **/
+	public ArrayList<int, int> getHistory() {
+		return this.ratingHistory;
+	}
+	
+	/** Add new movies to user's rating history. **/
+	public void addToHistory(Movie m) {
+		this.ratingHistory.add(m);
+	}
+	
+	/** Get the average of the ratings from the user. **/
+	public int getAvgRating() {
+		
+		return;
+	}
+	
+	/* Constructor. */
+	public User(int u) {
+		this.user = u;
+		this.ratingHistory = new ArrayList<Movie>();
+	}
+}

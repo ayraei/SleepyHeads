@@ -1,0 +1,29 @@
+/** 
+ * This class provides the implementation for getting the average of all 
+ * movie ratings. 
+ **/
+public class AllAvgTask implements Runnable {
+	// Fields
+	/** Running Summation **/
+	private int avgAllRatings = 0;
+	
+	/** Reference to our caller application **/
+	private BaselinePredictorApp app;
+	
+	/** Constructor, takes in an instance of BaselinePredictorApp. **/
+	public AllAvgTask(BaselinePredictorApp a) {
+		this.app = a;
+	}
+	
+	// Methods
+	public 
+	
+	@Override
+	public void run() {		
+		for (MovieProfile movie:app.allMovies.values()) {
+			avgAllRatings = avgAllRatings + movie.getAvgRating();
+		}
+		avgAllRatings = avgAllRatings/app.allMovies.size();
+		
+	}
+}

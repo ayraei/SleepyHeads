@@ -1,0 +1,10 @@
+/** Records the rating and the time the rating was generated. **/
+public class Rating {
+	/* Fields. */
+	/** Rating **/
+	private int rating;
+	
+	/** Time. **/
+	private int user;
+	
+}

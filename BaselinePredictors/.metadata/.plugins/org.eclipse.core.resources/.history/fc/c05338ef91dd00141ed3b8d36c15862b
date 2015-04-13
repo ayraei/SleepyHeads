@@ -1,0 +1,39 @@
+import java.util.LinkedList;
+
+/** User-based object class **/
+public class User {
+	/* Fields. */
+	/** Reference to the calling application. **/
+	private BaselinePredictorApp app;
+	
+	/** History of movie ratings. **/
+	private LinkedList<UserRating> ratingHistory;
+	
+	/* Methods. */
+	/** Check if user already exists. **/
+	public boolean checkExists() {
+		return true;
+	}
+	
+	/** Get user's history of movie ratings. **/
+	public LinkedList<UserRating> getHistory() {
+		return this.ratingHistory;
+	}
+	
+	/** Add new movies to user's rating history. **/
+	public void addToHistory(Integer m, Rating r) {
+		this.ratingHistory.put(m, r);
+	}
+	
+	/** Get the average of all ratings from the user. **/
+	public int getAvgRating() {
+		
+		return -1;
+	}
+	
+	/* Constructor. */
+	public User(BaselinePredictorApp a) {
+		this.app = a;
+		this.ratingHistory = new HashMap<Integer, Rating>();
+	}
+}

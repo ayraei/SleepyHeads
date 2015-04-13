@@ -1,0 +1,48 @@
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.text.DecimalFormat;
+
+/** 
+ * This class provides the implementation for getting the average of all 
+ * movie ratings. 
+ **/
+public class AllAvgTask implements Runnable {
+	// Fields
+	/** Running Summation **/
+	private double avgAllRatings = 0;
+	
+	/** Level of reported precision (3 decimal places) **/
+	DecimalFormat format = new DecimalFormat("0.000"); 
+	
+	/** Name of output file **/
+	private static String OUTPUT_FILE = "AllAvgMovies.dta";
+	
+	/** Reference to our caller application **/
+	private BasicBaselinePredictorApp app;
+	
+	/** Constructor, takes in an instance of BaselinePredictorApp. **/
+	public AllAvgTask(BasicBaselinePredictorApp a) {
+		this.app = a;
+	}
+	
+	// Methods
+	public double getAvgAllRating() {
+		return this.avgAllRatings;
+	}
+	
+	@Override
+	public void run() {	
+		for (MovieProfile movie:app.allMovies.values()) {
+			avgAllRatings = avgAllRatings + movie.getAvgRating();
+		}
+		avgAllRatings = avgAllRatings/app.allMovies.size();
+		
+		try {
+			PrintWriter out = new PrintWriter(OUTPUT_FILE);
+			out.println(format.format(avgAllRatings));
+			out.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+}

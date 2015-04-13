@@ -1,0 +1,20 @@
+import java.util.ArrayList;
+
+/** User-based object class **/
+public class User {
+	/* Fields. */
+	/** User ID number **/
+	private int user;
+	
+	/** History of movie ratings. **/
+	private ArrayList ratingHistory;
+	
+	/* Methods. */
+	
+	
+	/* Constructor. */
+	public User(int u, int m, int d, int r) {
+		this.user = u;
+		this.movie = m;
+	}
+}

@@ -1,0 +1,137 @@
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashMap;
+
+public class BaselinePredictorApp {
+	// Fields
+	/** Location of data file **/
+	private static String fileLoc = 
+			"/Users/debranangel/Documents/2014-15/CNS156b/um_sorted/trainingAll.dta";
+
+	/** Collections of all user IDs and movie IDs. **/
+	public HashMap<Integer, UserProfile> allUsers;
+	public HashMap<Integer, MovieProfile> allMovies;
+	
+	/** Number of baseline predictors **/
+	private static int NUM_PREDICTORS;
+	
+	/** Constructor **/
+	public BaselinePredictorApp() {
+		this.allUsers = new HashMap<Integer, UserProfile>();
+		this.allMovies = new HashMap<Integer, MovieProfile>();
+	}
+	
+	// Methods
+	/** Check if user already exists. **/
+	public boolean checkUser(int userID) {
+		return this.allUsers.containsKey(userID);
+	}
+	
+	/** Check if movie already exists. **/
+	public boolean checkMovie(int movieID) {
+		return this.allMovies.containsKey(movieID);
+	}
+	
+	/** Fill HashMaps with data from input files. **/
+	public void fillMaps() {
+		// Set up reader to read from file
+		String line;
+		String[] strArray = null;
+		Integer[] intArray = new Integer[4];
+		BufferedReader br = null;
+		try {
+			br = new BufferedReader(new FileReader(fileLoc));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		// Read from file until reach the end of file
+		try {
+			while ((line = br.readLine()) != null) {
+				System.out.println(line);
+				
+				/*
+				 * Splits line data into a data array such that entries:
+				 * 0: user number
+				 * 1: movie number
+				 * 2: date
+				 * 3: rating
+				 * Note that these are strings and need to be casted into Integers
+				 */
+				strArray = line.split("\\s+");
+				for(int i = 0;i < strArray.length;i++)
+				{
+					intArray[i] = Integer.parseInt(strArray[i]);
+				}
+				
+				// Check if user already exists
+				UserRating ur = new UserRating(intArray[1], intArray[2], intArray[3]);
+				MovieRating mr = new MovieRating(intArray[0], intArray[2], intArray[3]);
+				
+				if (this.checkUser(intArray[0])) {
+					this.allUsers.get(intArray[0]).addToHistory(ur);
+				} 
+				// Otherwise create new user
+				else {
+					UserProfile up = new UserProfile();
+					up.addToHistory(ur);
+					this.allUsers.put(intArray[0], up);
+				}
+				
+				// Check if movie already exists
+				if (this.checkMovie(intArray[1])) {
+					this.allMovies.get(intArray[1]).addToHistory(mr);
+				} 
+				// Otherwise create new movie
+				else {
+					MovieProfile mp = new MovieProfile();
+					mp.addToHistory(mr);
+					this.allMovies.put(intArray[1], mp);
+				}
+				
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/** Program entry point **/
+	public static void main(String[] args) {
+		BaselinePredictorApp app = new BaselinePredictorApp();
+		app.fillMaps();
+		
+		// Set up array of threads and tasks
+		Thread[] threadPool = new Thread[NUM_PREDICTORS];
+		Object[] tasks = new Object[NUM_PREDICTORS];
+		tasks[0] = new AllAvgTask(app);
+		tasks[1] = 0;
+		tasks[2] = 0;
+		
+		// Use multi-threading to speed up the process of getting predictors
+		for (int thread = 0; thread < NUM_PREDICTORS; thread++) {
+			// Identify task
+			CrawlerTask c = new CrawlerTask(pool);
+			
+			// Create new thread
+			Thread t = new Thread(c);
+			threadPool[thread] = t;
+			t.start();
+		}
+		
+		// Get average of all ratings
+		AllAvgTask aat = new AllAvgTask(app);
+		aat.getAvgAllRating();
+		
+		// Average Rating per User
+		AvgUserTask aut = new AvgUserTask(app);
+		aut.run();
+		
+		// Average Rating for particular movie
+		AvgMovieTask amt = new AvgMovieTask(app);
+		amt.run();
+		
+		
+	}
+}

@@ -1,0 +1,39 @@
+1428454865856	Rename type 'data'
+1428458005712	Delete element
+1428458973922	Rename type 'User'
+1428459505360	Rename type 'Movie'
+1428460400859	Delete element
+1428479890583	Rename local variable 'data'
+1428480398573	Rename local variable 'inArray'
+1428526146461	Rename local variable 'thread'
+1428541741109	Rename type 'MovieProfile'
+1428541750530	Rename type 'UserProfile'
+1428543291246	Rename type 'User'
+1428543356601	Rename type 'Movie'
+1428543420131	Rename field 'format'
+1428543437320	Rename field 'format'
+1428607786975	Rename type 'BaselinePredictorApp'
+1428607820257	Delete element
+1428607851949	Delete element
+1428607859162	Move compilation unit
+1428607864205	Move compilation unit
+1428608143235	Move compilation unit
+1428608150923	Move compilation unit
+1428608160126	Move compilation unit
+1428608165669	Move compilation units
+1428608418437	Rename field 'fileLoc'
+1428608428759	Rename field 'trainTileLoc'
+1428609293019	Move compilation unit
+1428609297547	Move compilation units
+1428609312515	Delete element
+1428609372116	Rename type 'StaticBaselinePredictorApp'
+1428609388803	Rename field 'fileLoc'
+1428609407479	Rename field 'trainingFileLoc'
+1428610716570	Rename field 'NUM_PREDICTORS'
+1428611773885	Rename field 'NUM_TASKS'
+1428637594767	Delete element
+1428639833501	Rename field 'trainFileLoc'
+1428639854656	Rename field 'testFileLoc'
+1428648311582	Rename field 'numBins'
+1428648321862	Rename field 'binSize'
+1428655582112	Rename type 'BasicBaselinePredictorApp'

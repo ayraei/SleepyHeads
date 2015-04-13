@@ -1,0 +1,13 @@
+/** Class for all input data. **/
+public class data {
+	/** User ID number **/
+	private int user;
+	
+	/** Movie ID number **/
+	private int movie;
+	
+	/**
+	 * Date: falls between 1 and 2243 (in days): Day 1 is Thursday,
+	 * Nov 11, 1999, and Day 2243 is Saturday, December 31, 2005.
+	 **/
+}

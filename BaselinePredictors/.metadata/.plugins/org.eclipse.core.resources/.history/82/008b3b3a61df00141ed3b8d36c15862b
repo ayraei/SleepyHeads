@@ -1,0 +1,11 @@
+
+/**
+ *  Splits up a training file into 10 files of roughly equal size
+ **/
+public class SplitDataApp {
+
+	public static void main(String[] args) {
+
+	}
+
+}

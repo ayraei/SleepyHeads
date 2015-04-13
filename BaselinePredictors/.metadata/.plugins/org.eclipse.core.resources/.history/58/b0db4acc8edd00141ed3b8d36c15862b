@@ -1,0 +1,13 @@
+/** Records the rating and the time the rating was generated. **/
+public class Rating {
+	/* Fields. */
+	/** Rating **/
+	private int rating;
+	
+	/**
+	 * Date: falls between 1 and 2243 (in days): Day 1 is Thursday,
+	 * November 11, 1999, and Day 2243 is Saturday, December 31, 2005.
+	 **/
+	private int date;
+	
+}
