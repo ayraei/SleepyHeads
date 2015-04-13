@@ -1,3 +1,4 @@
+
 import java.util.LinkedList;
 
 /** User-based object class **/
@@ -26,6 +27,15 @@ public class UserProfile {
 		return sum/(this.getHistory().size());
 	}
 
+	/** Calculate the average of the date of rating for the user. **/
+	public double getAvgDate() {
+		double sum = 0;
+		for (UserRating r:this.getHistory()) {
+			sum = sum + r.getDate();
+		}
+		return sum/(this.getHistory().size());
+	}
+	
 	// Constructor
 	public UserProfile() {
 		this.ratingHistory = new LinkedList<UserRating>();

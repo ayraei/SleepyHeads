@@ -1,0 +1,21 @@
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
+/** 
+ * This class provides the implementation for getting the drift value 
+ * of rating over time for the user. This information is placed to an output file
+ * called avgDateUsers.dta.
+ **/
+public class UserDriftFunctionTask implements Runnable {
+
+	public UserDriftFunctionTask(BaselinePredictorApp app) {
+		// TODO Auto-generated constructor stub
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+
+	}
+
+}

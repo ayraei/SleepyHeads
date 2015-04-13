@@ -1,5 +1,5 @@
 
-
+/** Movie-rating object, used to keep a history of ratings for a movie. **/
 public class MovieRating {
 	/** User ID number **/
 	private int user;

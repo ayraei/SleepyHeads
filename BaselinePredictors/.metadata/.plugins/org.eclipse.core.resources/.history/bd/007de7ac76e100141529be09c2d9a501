@@ -1,0 +1,9 @@
+
+/** 
+ * This class provides the implementation for getting the gradual drift
+ * in a user's rating. This information is placed to an output file
+ * called avgDayUsers.dta.
+ **/
+public class UserDriftTask {
+
+}

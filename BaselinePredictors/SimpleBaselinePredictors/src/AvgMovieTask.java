@@ -1,3 +1,4 @@
+
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 
@@ -7,7 +8,8 @@ import java.io.PrintWriter;
  **/
 public class AvgMovieTask implements Runnable {
 	/** Name of output file **/
-	private static String OUTPUT_FILE = "avgMovies.dta";
+	private static String OUTPUT_FILE = 
+			BaselinePredictorApp.OUTPUT_FOLDER + "avgMovies.dta";
 	
 	/** Reference to our caller application **/
 	private BaselinePredictorApp app;

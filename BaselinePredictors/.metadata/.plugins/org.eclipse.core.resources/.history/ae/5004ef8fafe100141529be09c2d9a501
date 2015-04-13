@@ -1,0 +1,57 @@
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import org.apache.commons.math3.stat.regression.SimpleRegression;
+
+/** 
+ * This class provides the implementation for getting the drift value 
+ * of rating over time for the user. This information is placed to an 
+ * output file called userDriftFunction.dta.
+ **/
+public class UserDriftFunctionTask implements Runnable {
+
+	/** Name of output file **/
+	private static String OUTPUT_FILE = 
+			BaselinePredictorApp.OUTPUT_FOLDER + "userDriftFunction.dta";
+
+	/** Reference to our caller application **/
+	private BaselinePredictorApp app;
+
+	/** Constructor, takes in an instance of BaselinePredictorApp. **/
+	public UserDriftFunctionTask(BaselinePredictorApp a) {
+		this.app = a;
+	}
+
+	@Override
+	public void run() {
+		double a, b;
+		PrintWriter out;
+		
+		try {
+			// Write each average to file
+			out = new PrintWriter(OUTPUT_FILE);
+			for (Integer userID:app.allUsers.keySet()) {
+				
+				// Linear Regression to get constants
+				SimpleRegression regression = new SimpleRegression();
+				for (UserRating r:app.allUsers.get(userID).getHistory()) {
+					regression.addData(r.getDate(), r.getDate());
+				}
+							
+				a = regression.getSlope();
+				b = regression.getIntercept();
+				
+				// Write it out to file
+				out.println(userID + " " + 
+				BaselinePredictorApp.FORMAT_PRECISION.format(a) + " " +
+				BaselinePredictorApp.FORMAT_PRECISION.format(b));
+			}
+			
+			// Close file
+			out.close();
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+}

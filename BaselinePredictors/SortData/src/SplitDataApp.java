@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Random;
 
-
 /**
  *  Randomly divides up a training file into 10 files of roughly equal size.
  **/

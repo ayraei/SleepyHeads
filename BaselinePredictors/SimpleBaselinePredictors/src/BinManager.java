@@ -1,3 +1,4 @@
+
 import java.util.HashMap;
 
 /** Manages the creation and processing of bins **/

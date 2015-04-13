@@ -19,7 +19,8 @@ import java.io.PrintWriter;
 public class MoviePopularityTask implements Runnable {
 	// Fields
 	/** Name of output file **/
-	private static String OUTPUT_FILE = "moviePopularities.dta";
+	private static String OUTPUT_FILE = 
+			BaselinePredictorApp.OUTPUT_FOLDER + "moviePopularities.dta";
 
 	/** Reference to our caller application **/
 	private BaselinePredictorApp app;

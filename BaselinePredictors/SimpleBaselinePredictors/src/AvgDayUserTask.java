@@ -1,4 +1,6 @@
+
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,7 +13,8 @@ import java.io.PrintWriter;
  **/
 public class AvgDayUserTask implements Runnable {
 	/** Name of output file **/
-	private static String OUTPUT_FILE = "avgDayUsers.dta";
+	private static String OUTPUT_FILE = 
+			BaselinePredictorApp.OUTPUT_FOLDER + "avgDayUsers.dta";
 
 	/** Reference to our caller application **/
 	private BaselinePredictorApp app;
@@ -24,6 +27,13 @@ public class AvgDayUserTask implements Runnable {
 	@Override
 	public void run() {
 		Integer targetDate, userID;
+		
+		// Check if file already exists, exit if it does
+		File file = new File(OUTPUT_FILE);
+		if(file.exists() && !file.isDirectory()) 
+		{
+			return;
+		}
 		
 		// Variables related to reading and writing files
 		String line;
