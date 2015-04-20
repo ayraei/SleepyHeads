@@ -1,5 +1,8 @@
 
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 /** 
@@ -37,10 +40,12 @@ public class AllAvgTask implements Runnable {
 		avgAllRatings = avgAllRatings/app.allMovies.size();
 		
 		try {
-			PrintWriter out = new PrintWriter(OUTPUT_FILE);
+			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_FILE)));
 			out.println(BaselinePredictorApp.FORMAT_PRECISION.format(avgAllRatings));
 			out.close();
 		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

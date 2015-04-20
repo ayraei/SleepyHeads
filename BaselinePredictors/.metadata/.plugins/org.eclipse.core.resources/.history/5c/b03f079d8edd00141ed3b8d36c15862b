@@ -1,7 +1,0 @@
-
-public class Rating {
-	/* Fields. */
-	/** User ID number **/
-	private int user;
-	
-}

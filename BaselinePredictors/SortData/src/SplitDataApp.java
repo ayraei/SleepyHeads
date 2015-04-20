@@ -13,8 +13,8 @@ public class SplitDataApp {
 	// Fields
 	/** Location of training file **/
 	private static String TRAIN_ALL_FILE_LOC = 
-			// "/Users/debranangel/Documents/2014-15/CNS156b/um_sorted/testingCode.dta";
-			"/Users/debranangel/Documents/2014-15/CNS156b/um_sorted/trainingAll.dta";
+			// "/Users/debranangel/Documents/2014-15/NetflixData/um_sorted/testingCode.dta";
+			"/Users/debranangel/Documents/2014-15/NetflixData/mu_sorted/trainingAll.dta";
 	
 	/** Number of files to split into **/
 	private static int NUM_FILES = 10;
@@ -36,14 +36,20 @@ public class SplitDataApp {
 		try {
 			// Randomly pick a file
 			Random generator = new Random(); 
+			int count = 0;
 			
 			while ((line = br.readLine()) != null) {
+				// Print progress
+				if (count % 10000000 == 0) {
+					System.out.println(count);
+				}
+				count++;
+				
 				// Randomly select a number from [0, numFiles) with uniform distribution
 				int n = generator.nextInt(NUM_FILES);
-				PrintWriter out = new PrintWriter(new FileOutputStream(n + "training.dta", true));
 				
 				// Print the line to the output file
-				System.out.println(line);
+				PrintWriter out = new PrintWriter(new FileOutputStream(n + "training.dta", true));
 				out.println(line);
 				
 				// Close files

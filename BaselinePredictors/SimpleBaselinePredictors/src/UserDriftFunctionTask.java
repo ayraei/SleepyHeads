@@ -1,5 +1,9 @@
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
+
 import org.apache.commons.math3.stat.regression.SimpleRegression;
 
 /** 
@@ -25,33 +29,36 @@ public class UserDriftFunctionTask implements Runnable {
 	public void run() {
 		double a, b;
 		PrintWriter out;
-		
+
 		try {
-			out = new PrintWriter(OUTPUT_FILE);
-			
+			out = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_FILE)));
+
 			// Write each average to file
 			for (Integer userID:app.allUsers.keySet()) {
-				
+
 				// Run linear regression
 				SimpleRegression regression = new SimpleRegression();
 				for (UserRating r:app.allUsers.get(userID).getHistory()) {
 					regression.addData(r.getDate(), r.getRating());
 				}
-				
+
 				// Get constants
 				a = regression.getSlope();
 				b = regression.getIntercept();
-				
+
 				// Write it out to file
 				out.println(userID + " " + 
-				BaselinePredictorApp.FORMAT_PRECISION.format(a) + " " +
-				BaselinePredictorApp.FORMAT_PRECISION.format(b));
+						BaselinePredictorApp.FORMAT_PRECISION.format(a) + " " +
+						BaselinePredictorApp.FORMAT_PRECISION.format(b));
 			}
-			
+
 			// Close file
 			out.close();
-			
+
 		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

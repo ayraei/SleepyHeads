@@ -1,7 +1,9 @@
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
@@ -50,7 +52,7 @@ public class MoviePopularityTask implements Runnable {
 
 
 		try {
-			PrintWriter out = new PrintWriter(OUTPUT_FILE);
+			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_FILE)));
 			
 			while ((line = br.readLine()) != null) {
 				// Get the relevant movie data

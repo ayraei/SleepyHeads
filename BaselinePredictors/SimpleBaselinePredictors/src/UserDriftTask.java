@@ -1,8 +1,10 @@
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.HashMap;
@@ -63,7 +65,7 @@ public class UserDriftTask implements Runnable {
 		}
 
 		try {
-			PrintWriter out = new PrintWriter(OUTPUT_FILE);
+			PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_FILE)));
 
 			while ((lineTest = brTest.readLine()) != null) {
 				double userDrift = 0;
@@ -154,6 +156,7 @@ public class UserDriftTask implements Runnable {
 		try {
 			brDrift = new BufferedReader(new FileReader(BaselinePredictorApp.OUTPUT_FOLDER + "userDriftFunction.dta"));
 			brAvgDate = new BufferedReader(new FileReader(BaselinePredictorApp.OUTPUT_FOLDER + "avgDateUser.dta"));
+		
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 		}

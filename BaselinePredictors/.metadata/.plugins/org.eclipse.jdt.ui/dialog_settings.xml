@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
+	<item value="480,442" key="UserLibraryLoadSaveDialog.size"/>
+	<item value="/Users/debranangel/Documents/2014-15/NetflixData/commons-math3-3.4.1" key="org.eclipse.jdt.ui.lastextjar"/>
+	<section name="OptionalMessageDialog.hide.">
+		<item value="true" key="org.eclipse.jdt.ui.typecomment.deprecated"/>
+	</section>
 	<section name="org.eclipse.jdt.internal.ui.packageview.PackageExplorerPart">
 		<item value="true" key="group_libraries"/>
 		<item value="false" key="linkWithEditor"/>
@@ -11,10 +16,20 @@
 	</section>
 	<section name="JavaElementSearchActions">
 	</section>
-	<section name="org.eclipse.ltk.ui.refactoring.settings">
+	<section name="BuildPathsPropertyPage">
+		<item value="3" key="pageIndex"/>
+	</section>
+	<section name="NewClassWizardPage">
+		<item value="false" key="create_constructor"/>
+		<item value="true" key="create_unimplemented"/>
+	</section>
+	<section name="quick_assist_proposal_size">
 	</section>
 	<section name="RenameInformationPopup">
 	</section>
-	<section name="quick_assist_proposal_size">
+	<section name="org.eclipse.ltk.ui.refactoring.settings">
+	</section>
+	<section name="ClasspathContainerSelectionPage">
+		<item value="3" key="index"/>
 	</section>
 </section>

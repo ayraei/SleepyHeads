@@ -1,5 +1,7 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.IOException;
 import java.io.FileNotFoundException;
@@ -11,14 +13,14 @@ import java.io.FileNotFoundException;
 public class SortDataApp {
 	/** Location of index file **/
 	private static String INDEX_FILE_LOC = 
-			"/Users/debranangel/Documents/2014-15/CNS156b/um/all.idx";
+			"/Users/debranangel/Documents/2014-15/NetflixData/mu/all.idx";
 
 	/** Location of data file **/
 	private static String DATA_FILE_LOC = 
-			"/Users/debranangel/Documents/2014-15/CNS156b/um/all.dta";
+			"/Users/debranangel/Documents/2014-15/NetflixData/mu/all.dta";
 
 	/** Training set prefix **/
-	private static String TRAIN_FILE = "training.dta";
+	private static String TRAIN_FILE = "trainingAll.dta";
 
 	/** Probe set prefix **/
 	private static String PROBE_FILE = "probe.dta";
@@ -44,12 +46,19 @@ public class SortDataApp {
 		}
 
 		try {
-			PrintWriter trnOut = new PrintWriter(TRAIN_FILE);
-			PrintWriter prbOut = new PrintWriter(PROBE_FILE);
-			PrintWriter tstOut = new PrintWriter(TEST_FILE);
-
+			PrintWriter trnOut = new PrintWriter(new BufferedWriter(new FileWriter(TRAIN_FILE)));
+			PrintWriter prbOut = new PrintWriter(new BufferedWriter(new FileWriter(PROBE_FILE)));
+			PrintWriter tstOut = new PrintWriter(new BufferedWriter(new FileWriter(TEST_FILE)));
+			
+			int count = 0;
+			
 			while ((data = dBr.readLine()) != null) {
-				System.out.println(data);
+				// Print progress
+				if (count % 10000000 == 0) {
+					System.out.println(count);
+				}
+				count++;
+				
 				i =  Integer.parseInt(iBr.readLine());
 				switch(i) {
 				case 1: 

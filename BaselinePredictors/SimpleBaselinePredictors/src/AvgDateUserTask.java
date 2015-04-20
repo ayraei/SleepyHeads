@@ -1,4 +1,7 @@
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 
 /** 
@@ -27,7 +30,7 @@ public class AvgDateUserTask implements Runnable {
 		
 		try {
 			// Write each average to file
-			out = new PrintWriter(OUTPUT_FILE);
+			out = new PrintWriter(new BufferedWriter(new FileWriter(OUTPUT_FILE)));
 			for (Integer userID:app.allUsers.keySet()) {
 				avgDate = app.allUsers.get(userID).getAvgDate();
 				
@@ -39,6 +42,8 @@ public class AvgDateUserTask implements Runnable {
 			out.close();
 			
 		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}

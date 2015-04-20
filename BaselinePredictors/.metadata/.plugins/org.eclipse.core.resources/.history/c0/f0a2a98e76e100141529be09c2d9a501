@@ -1,9 +1,0 @@
-
-/** 
- * This class provides the implementation for getting the average rating 
- * of each user for a particular day. This information is placed to an 
- * output file called avgDayUsers.dta.
- **/
-public class UserDriftTask {
-
-}
