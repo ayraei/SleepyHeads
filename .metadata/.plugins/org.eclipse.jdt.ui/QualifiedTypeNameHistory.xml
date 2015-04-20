@@ -11,6 +11,10 @@
 <fullyQualifiedTypeName name="java.util.HashMap"/>
 <fullyQualifiedTypeName name="gnu.trove.map.TIntObjectMap"/>
 <fullyQualifiedTypeName name="gnu.trove.map.hash.TIntIntHashMap"/>
-<fullyQualifiedTypeName name="gnu.trove.iterator.TIntObjectIterator"/>
 <fullyQualifiedTypeName name="java.util.Collection"/>
+<fullyQualifiedTypeName name="Jama.Matrix"/>
+<fullyQualifiedTypeName name="java.io.BufferedWriter"/>
+<fullyQualifiedTypeName name="java.io.FileWriter"/>
+<fullyQualifiedTypeName name="java.text.DecimalFormat"/>
+<fullyQualifiedTypeName name="gnu.trove.iterator.TIntObjectIterator"/>
 </qualifiedTypeNameHistroy>

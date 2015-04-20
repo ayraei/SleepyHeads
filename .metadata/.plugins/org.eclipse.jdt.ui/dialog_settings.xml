@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <section name="Workbench">
-	<item value="/Users/debranangel/Documents/2014-15/NetflixData/trove-3.1a1/3.1a1/lib" key="org.eclipse.jdt.ui.lastextjar"/>
+	<item value="/Users/debbie1/Documents/NetflixData/trove-3.1a1/3.1a1/lib" key="org.eclipse.jdt.ui.lastextjar"/>
+	<item value="JavaSE-1.7" key="org.eclipse.jdt.ui.last.selected.execution.enviroment"/>
 	<section name="OptionalMessageDialog.hide.">
 		<item value="true" key="org.eclipse.jdt.ui.typecomment.deprecated"/>
 	</section>

@@ -25,7 +25,7 @@ public class KNN_TROVE {
 
 	/** Location of training file **/
 	private static String TRAIN_FILE_LOC = 
-			"/Users/debranangel/Documents/2014-15/NetflixData/mu_sorted/trainingAll.dta";
+			"/Users/debbie1/Documents/NetflixData/mu_sorted/trainingAll.dta";
 
 	/** Max number of neighbors **/
 	private static int K = 20;
@@ -109,7 +109,7 @@ public class KNN_TROVE {
 			
 			// Get the users for this movie
 			Collection<TIntIntHashMap> m1 = app.movieHash.valueCollection();
-			TIntSet h1 = m1.keyCollection();
+
 
 			for (TIntObjectIterator it2 = app.movieHash.iterator(); it2.hasNext();) {
 				it2.advance();
@@ -130,13 +130,13 @@ public class KNN_TROVE {
 
 
 
-		/*
+		
 		// Print the line to the output file
-		PrintWriter out = new PrintWriter(new FileOutputStream("training.dta", true));
-		out.println(line);
-
-		// Close files
-		out.close();*/
+//		PrintWriter out = new PrintWriter(new FileOutputStream("training.dta", true));
+//		out.println(line);
+//
+//		// Close files
+//		out.close();
 
 	}
 }

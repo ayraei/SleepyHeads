@@ -1,10 +1,15 @@
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.Set;
+
+import Jama.Matrix;
 
 /** 
  * This application provides the implementation for finding at most k number
@@ -20,24 +25,25 @@ public class KNNApp {
 
 	/** Location of training file **/
 	private static String TRAIN_FILE_LOC = 
-			"/Users/debranangel/Documents/2014-15/NetflixData/mu_sorted/trainingAll.dta";
+			"/Users/debbie1/Documents/NetflixData/mu_sorted/trainingAll.dta";
+
+	/** Location of output files **/
+	private static String OUTPUT_SIM_LOC = 
+			"/Users/debbie1/Documents/NetflixData/output/sim.dta";
+	private static String OUTPUT_NHBRS_LOC = 
+			"/Users/debbie1/Documents/NetflixData/output/nhbrs.dta";
+
+	/** Level of reported precision (3 decimal places) **/
+	public static DecimalFormat FORMAT_PRECISION = new DecimalFormat("0.000"); 
 
 	/** Max number of neighbors **/
 	private static int K = 20;
 
 	/** Number of movies **/
-	private static int NUM_MOVIES = 1770;
+	private static int NUM_MOVIES = 17770;
 
 	/** Arrays **/
 	private HashMap<Integer, HashMap<Integer, Integer>> movieHash;
-	private int[][] sim;
-	private int[][] nhbr;
-
-	/** Location of output files **/
-	private static String OUTPUT_SIM_LOC = 
-			"/Users/debranangel/Documents/2014-15/NetflixData/output/sim.dta";
-	private static String OUTPUT_NHBRS_LOC = 
-			"/Users/debranangel/Documents/2014-15/NetflixData/output/nhbrs.dta";
 
 	/** Constructor **/
 	public KNNApp() {
@@ -97,9 +103,90 @@ public class KNNApp {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		System.out.println("done");
 
+		System.out.println("done reading in data");
+
+		// Calculate similarities
+		count = 0;
+		try {
+			PrintWriter out = new PrintWriter
+							(new BufferedWriter
+							(new FileWriter(OUTPUT_SIM_LOC, true)));
+
+			for (HashMap<Integer, Integer> m1 : app.movieHash.values()) {
+
+				// Print progress
+				//if (count % 2000 == 0) {
+				//	System.out.println(count);
+				//}
+				//count++;
+
+				for (HashMap<Integer, Integer> m2 : app.movieHash.values()) {
+
+					// TODO FIGURE OUT WHY M1.size GOES TO ZERO AFTER THIRD ITERATION
+					
+					// Find intersection between user sets
+					Set<Integer> user_intersect = m1.keySet();
+					Set<Integer> m2_users = m2.keySet();
+					System.out.println("m1: " + user_intersect.size());
+					System.out.println("m2: " + m2_users.size() + "\n");
+					user_intersect.retainAll(m2_users);
+
+					// Extract the vectors of ratings from the overlapping users			
+					int size = user_intersect.size();
+					Matrix u = new Matrix(1, size);
+					Matrix v = new Matrix(size, 1);
+
+					int i = 0;
+					double uSum = 0;
+					double vSum = 0;
+					for (int ui : user_intersect) {
+						u.set(0, i, m1.get(ui));
+						v.set(i, 0, m2.get(ui));
+
+						uSum += u.get(0, i);
+						vSum += v.get(i, 0);
+
+						i++;
+					}
+
+					// Calculate similarity
+					// 1-(u-Mean[u]).(v-Mean[v])/(Norm[u-Mean[u]]Norm[v-Mean[v]])
+					double numer;
+					double denom;
+					Matrix uAvg = new Matrix(1, size, uSum / size);
+					Matrix vAvg = new Matrix(size, 1, vSum / size);
+
+					u.minusEquals(uAvg);
+					v.minusEquals(vAvg);
+					numer = u.times(v).get(0, 0);
+					denom = u.normF() * v.normF();
+
+					assert denom != 0;
+					double sim = 1 - (numer / denom);
+
+					// Output similarities to text file
+					out.print(FORMAT_PRECISION.format(sim) + " ");
+				}
+
+				// Start a new line for next movie
+				out.println();
+				break;
+			}
+
+			// Close the file
+			out.close();
+
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+
+		System.out.println("done calculating similarities");
+
+		// Identify neighbors
+
+
+		// Output neighbors to text file
 
 
 		/*
