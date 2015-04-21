@@ -1,5 +1,6 @@
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -7,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
 
 import Jama.Matrix;
@@ -106,30 +108,39 @@ public class KNNApp {
 
 		System.out.println("done reading in data");
 
+		// Delete if sim file already exists
+		// If don't delete, then will only append to file
+		try{
+			File simFile = new File(OUTPUT_SIM_LOC);
+			if (simFile.exists()) {
+				simFile.delete();
+			}   
+		} catch(Exception e){
+			e.printStackTrace();
+		}
+
 		// Calculate similarities
 		count = 0;
 		try {
-			PrintWriter out = new PrintWriter
-							(new BufferedWriter
-							(new FileWriter(OUTPUT_SIM_LOC, true)));
+			PrintWriter out = new PrintWriter (new BufferedWriter
+							 (new FileWriter(OUTPUT_SIM_LOC, true)));
 
 			for (HashMap<Integer, Integer> m1 : app.movieHash.values()) {
 
 				// Print progress
-				//if (count % 2000 == 0) {
-				//	System.out.println(count);
-				//}
-				//count++;
+				if (count % 2000 == 0) {
+					System.out.println(count);
+				}
+				count++;
+
+				Set<Integer> m1_users = m1.keySet();
 
 				for (HashMap<Integer, Integer> m2 : app.movieHash.values()) {
 
-					// TODO FIGURE OUT WHY M1.size GOES TO ZERO AFTER THIRD ITERATION
-					
 					// Find intersection between user sets
-					Set<Integer> user_intersect = m1.keySet();
+					Set<Integer> user_intersect = new HashSet<Integer>();
+					user_intersect.addAll(m1_users);
 					Set<Integer> m2_users = m2.keySet();
-					System.out.println("m1: " + user_intersect.size());
-					System.out.println("m2: " + m2_users.size() + "\n");
 					user_intersect.retainAll(m2_users);
 
 					// Extract the vectors of ratings from the overlapping users			
@@ -156,13 +167,12 @@ public class KNNApp {
 					double denom;
 					Matrix uAvg = new Matrix(1, size, uSum / size);
 					Matrix vAvg = new Matrix(size, 1, vSum / size);
-
 					u.minusEquals(uAvg);
 					v.minusEquals(vAvg);
+
 					numer = u.times(v).get(0, 0);
 					denom = u.normF() * v.normF();
 
-					assert denom != 0;
 					double sim = 1 - (numer / denom);
 
 					// Output similarities to text file
@@ -170,7 +180,7 @@ public class KNNApp {
 				}
 
 				// Start a new line for next movie
-				out.println();
+				out.println(" ");
 				break;
 			}
 
