@@ -1,0 +1,25 @@
+import Jama.Matrix;
+
+
+public class CorrDist {
+	
+	private double numer;
+	private double denom;
+	
+	/** Constructor **/
+	public CorrDist(int size, int uSum, int vSum, Matrix u, Matrix v) {
+		
+	}
+	
+	// 1-(u-Mean[u]).(v-Mean[v]) / (Norm[u-Mean[u]] Norm[v-Mean[v]])
+	Matrix uAvg = new Matrix(1, size, uSum / size);
+	Matrix vAvg = new Matrix(size, 1, vSum / size);
+	u.minusEquals(uAvg);
+	v.minusEquals(vAvg);
+
+	numer = u.times(v).get(0, 0);
+	denom = u.normF() * v.normF();
+
+	double sim = 1 - (numer / denom);
+
+}

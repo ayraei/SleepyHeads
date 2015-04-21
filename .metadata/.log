@@ -972,3 +972,27 @@ Command-line arguments:  -os macosx -ws cocoa -arch x86_64 -product org.eclipse.
 
 !ENTRY org.eclipse.core.resources 4 368 2015-04-20 14:21:55.641
 !MESSAGE Variable references non-existent resource : ${workspace_loc:/KNN/lib/trove-3.1a1/3.1a1/build.xml}
+
+!ENTRY org.eclipse.core.resources 4 368 2015-04-20 19:06:21.349
+!MESSAGE Variable references non-existent resource : ${workspace_loc:/KNN/lib/trove-3.1a1/3.1a1/build.xml}
+
+!ENTRY org.eclipse.core.resources 4 368 2015-04-20 19:06:28.216
+!MESSAGE Variable references non-existent resource : ${workspace_loc:/KNN/lib/trove-3.1a1/3.1a1/build.xml}
+
+!ENTRY org.eclipse.ui 4 4 2015-04-20 19:57:55.765
+!MESSAGE Could not retrieve EHandlerService or ICommandService from context evaluation context fororg.eclipse.wst.xml.ui.disable.grammar.constraints
+
+!ENTRY org.eclipse.ui 4 4 2015-04-20 19:57:55.768
+!MESSAGE Could not retrieve EHandlerService or ICommandService from context evaluation context fororg.eclipse.wst.xml.ui.reload.dependencies
+
+!ENTRY org.eclipse.ui 4 4 2015-04-20 19:57:55.768
+!MESSAGE Could not retrieve EHandlerService or ICommandService from context evaluation context fororg.eclipse.wst.xml.ui.disable.grammar.constraints
+
+!ENTRY org.eclipse.ui 4 4 2015-04-20 19:57:55.768
+!MESSAGE Could not retrieve EHandlerService or ICommandService from context evaluation context fororg.eclipse.wst.xml.ui.reload.dependencies
+
+!ENTRY org.eclipse.ui 4 4 2015-04-20 19:57:55.769
+!MESSAGE Could not retrieve EHandlerService or ICommandService from context evaluation context fororg.eclipse.wst.xml.ui.disable.grammar.constraints
+
+!ENTRY org.eclipse.ui 4 4 2015-04-20 19:57:55.769
+!MESSAGE Could not retrieve EHandlerService or ICommandService from context evaluation context fororg.eclipse.wst.xml.ui.reload.dependencies

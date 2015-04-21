@@ -128,7 +128,7 @@ public class KNNApp {
 			for (HashMap<Integer, Integer> m1 : app.movieHash.values()) {
 
 				// Print progress
-				if (count % 2000 == 0) {
+				if (count % 1000 == 0) {
 					System.out.println(count);
 				}
 				count++;
@@ -143,37 +143,22 @@ public class KNNApp {
 					Set<Integer> m2_users = m2.keySet();
 					user_intersect.retainAll(m2_users);
 
-					// Extract the vectors of ratings from the overlapping users			
+					// Extract the vectors of ratings of the overlapping users			
 					int size = user_intersect.size();
-					Matrix u = new Matrix(1, size);
+					Matrix u = new Matrix(size, 1);
 					Matrix v = new Matrix(size, 1);
 
 					int i = 0;
-					double uSum = 0;
-					double vSum = 0;
 					for (int ui : user_intersect) {
-						u.set(0, i, m1.get(ui));
+						u.set(i, 0, m1.get(ui));
 						v.set(i, 0, m2.get(ui));
-
-						uSum += u.get(0, i);
-						vSum += v.get(i, 0);
-
 						i++;
 					}
-
+					
 					// Calculate similarity
-					// 1-(u-Mean[u]).(v-Mean[v])/(Norm[u-Mean[u]]Norm[v-Mean[v]])
-					double numer;
-					double denom;
-					Matrix uAvg = new Matrix(1, size, uSum / size);
-					Matrix vAvg = new Matrix(size, 1, vSum / size);
-					u.minusEquals(uAvg);
-					v.minusEquals(vAvg);
-
-					numer = u.times(v).get(0, 0);
-					denom = u.normF() * v.normF();
-
-					double sim = 1 - (numer / denom);
+					Matrix diff = u.minus(v);
+					double temp = diff.transpose().times(diff).get(0, 0);
+					double sim = Math.sqrt(temp);
 
 					// Output similarities to text file
 					out.print(FORMAT_PRECISION.format(sim) + " ");
@@ -181,7 +166,6 @@ public class KNNApp {
 
 				// Start a new line for next movie
 				out.println(" ");
-				break;
 			}
 
 			// Close the file
