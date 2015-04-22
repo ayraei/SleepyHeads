@@ -9,7 +9,10 @@ import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import Jama.Matrix;
 
@@ -45,7 +48,7 @@ public class KNNApp {
 	private static int NUM_MOVIES = 17770;
 
 	/** Arrays **/
-	private HashMap<Integer, HashMap<Integer, Integer>> movieHash;
+	public HashMap<Integer, HashMap<Integer, Integer>> movieHash;
 
 	/** Constructor **/
 	public KNNApp() {
@@ -108,71 +111,14 @@ public class KNNApp {
 
 		System.out.println("done reading in data");
 
-		// Delete if sim file already exists
-		// If don't delete, then will only append to file
-		try{
-			File simFile = new File(OUTPUT_SIM_LOC);
-			if (simFile.exists()) {
-				simFile.delete();
-			}   
-		} catch(Exception e){
-			e.printStackTrace();
+		// Calculate similarities with multi-threading
+		ExecutorService executor = Executors.newFixedThreadPool(10);
+		for (int t = 0; t < 10; t++) {
+			Runnable worker = new EucDist(app, t * 1777, (t + 1) * 1777 - 1, t);
+			executor.execute(worker);
 		}
-
-		// Calculate similarities
-		count = 0;
-		try {
-			PrintWriter out = new PrintWriter (new BufferedWriter
-							 (new FileWriter(OUTPUT_SIM_LOC, true)));
-
-			for (HashMap<Integer, Integer> m1 : app.movieHash.values()) {
-
-				// Print progress
-				if (count % 1000 == 0) {
-					System.out.println(count);
-				}
-				count++;
-
-				Set<Integer> m1_users = m1.keySet();
-
-				for (HashMap<Integer, Integer> m2 : app.movieHash.values()) {
-
-					// Find intersection between user sets
-					Set<Integer> user_intersect = new HashSet<Integer>();
-					user_intersect.addAll(m1_users);
-					Set<Integer> m2_users = m2.keySet();
-					user_intersect.retainAll(m2_users);
-
-					// Extract the vectors of ratings of the overlapping users			
-					int size = user_intersect.size();
-					Matrix u = new Matrix(size, 1);
-					Matrix v = new Matrix(size, 1);
-
-					int i = 0;
-					for (int ui : user_intersect) {
-						u.set(i, 0, m1.get(ui));
-						v.set(i, 0, m2.get(ui));
-						i++;
-					}
-					
-					// Calculate similarity
-					Matrix diff = u.minus(v);
-					double temp = diff.transpose().times(diff).get(0, 0);
-					double sim = Math.sqrt(temp);
-
-					// Output similarities to text file
-					out.print(FORMAT_PRECISION.format(sim) + " ");
-				}
-
-				// Start a new line for next movie
-				out.println(" ");
-			}
-
-			// Close the file
-			out.close();
-
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		executor.shutdown();
+		while (!executor.isTerminated()) {
 		}
 
 		System.out.println("done calculating similarities");

@@ -1,0 +1,10 @@
+
+public class EucDist implements Runnable {
+
+	@Override
+	public void run() {
+		
+		
+	}
+
+}
