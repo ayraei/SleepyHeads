@@ -1,101 +1,87 @@
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+/**
+ * Use Euclidean Distance to calculate similarity between two movies
+ */
 
 import Jama.Matrix;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 
 public class EucDist implements Runnable {
 
-	/** Fields **/
-	private KNNApp app;
-	private int start;
-	private int end;
-	private int threadID;
+    /** Fields **/
+    private int threadID;
+    private final BlockingQueue<CalcData> queue;
+    private final Matrix results;
+    private final CalcStatistics statistics;
 
-	/** Constructor **/
-	public EucDist(KNNApp a, int s, int e, int t) {
-		this.app = a;
-		this.start = s;
-		this.end = e;
-		this.threadID = t;
-	}
+    /** Constructor **/
+    public EucDist(int t, BlockingQueue<CalcData> queue, Matrix results, CalcStatistics statistics) {
+        this.threadID = t;
+        this.queue = queue;
+        this.results = results;
+        this.statistics = statistics;
+    }
 
-	@Override
-	public void run() {
-		// Delete if sim file already exists
-		// If don't delete, then will only append to file
-		try{
-			File simFile = new File(Integer.toString(threadID) + ".dta");
-			if (simFile.exists()) {
-				simFile.delete();
-			}   
-		} catch(Exception e){
-			e.printStackTrace();
-		}
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                CalcData calcData = queue.take();
+                if (calcData.getRow() == -1) {
+                    break;
+                }
+                
+                double result = calcSimilarity(calcData);
+                results.set(calcData.getRow(), calcData.getColumn(), result);
+                results.set(calcData.getColumn(), calcData.getRow(), result);
+                statistics.incAndGet();
+                
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+        System.out.println("ThreadId " + threadID + " ended.");
+    }
 
-		// Calculate similarities
-		try {
-			PrintWriter out = new PrintWriter (new BufferedWriter
-					         (new FileWriter(Integer.toString(threadID) + ".dta", true)));
+    public double calcSimilarity(CalcData calcData) {
+        HashMap<Integer, Integer> m1 = calcData.getM1();
+        HashMap<Integer, Integer> m2 = calcData.getM2();
 
-			for (int i = start; i < end - 1; i++) {
+        Set<Integer> m1_users = m1.keySet();
+        Set<Integer> m2_users = m2.keySet();
 
-				HashMap<Integer, Integer> m1 = app.movieHash.get(i);
-				Set<Integer> m1_users = m1.keySet();
+        // Find intersection between user sets
+        Set<Integer> user_intersect = new HashSet<Integer>();
+        user_intersect.addAll(m1_users);
+        user_intersect.retainAll(m2_users);
 
-				for (int j = i + 1; j < end; j++) {
-					HashMap<Integer, Integer> m2 = app.movieHash.get(j);
-					Set<Integer> m2_users = m2.keySet();
+        // Extract the vectors of ratings of the overlapping users
+        int size = user_intersect.size();
 
-					// Find intersection between user sets
-					Set<Integer> user_intersect = new HashSet<Integer>();
-					user_intersect.addAll(m1_users);
-					user_intersect.retainAll(m2_users);
+        // Don't bother with calculations if the intersection is empty
+        if (size == 0) {
+            return (double) 0;
+        }
 
-					// Don't bother with calculations if the intersection is empty
-					if (user_intersect.size() == 0) {
-						out.print(KNNApp.FORMAT_PRECISION.format(0) + " ");
-						break;
-					}
+        Matrix u = new Matrix(size, 1);
+        Matrix v = new Matrix(size, 1);
 
-					// Extract the vectors of ratings of the overlapping users			
-					int size = user_intersect.size();
-					Matrix u = new Matrix(size, 1);
-					Matrix v = new Matrix(size, 1);
+        int k = 0;
+        for (int ui : user_intersect) {
+            u.set(k, 0, m1.get(ui));
+            v.set(k, 0, m2.get(ui));
+            k++;
+        }
 
-					int k = 0;
-					for (int ui : user_intersect) {
-						u.set(k, 0, m1.get(ui));
-						v.set(k, 0, m2.get(ui));
-						k++;
-					}
+        // Calculate similarity
+        Matrix diff = u.minus(v);
+        double temp = diff.transpose().times(diff).get(0, 0);
+        double sim = Math.sqrt(temp);
 
-					// Calculate similarity
-					Matrix diff = u.minus(v);
-					double temp = diff.transpose().times(diff).get(0, 0);
-					double sim = Math.sqrt(temp);
-
-					// Output similarities to text file
-					out.print(KNNApp.FORMAT_PRECISION.format(sim) + " ");
-				}
-
-				// Start a new line for next movie
-				out.println(" ");
-			}
-
-			// Close the file
-			out.close();
-
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-
-	}
+        return sim;
+    }
 
 }
