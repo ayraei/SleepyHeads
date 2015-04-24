@@ -1,8 +1,0 @@
-package temporal;
-
-public class Snippet {
-	public static void main(String[] args) {
-		MoviePopularityTask
-	}
-}
-

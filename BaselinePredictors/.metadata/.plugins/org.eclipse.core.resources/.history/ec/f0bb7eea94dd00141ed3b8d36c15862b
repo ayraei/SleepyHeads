@@ -1,8 +1,0 @@
-
-/** Movie object class. **/
-public class Movie {
-	/* Fields. */
-	/** Movie ID number **/
-	private int id;
-	
-}
