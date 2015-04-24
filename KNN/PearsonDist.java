@@ -50,11 +50,10 @@ public class PearsonDist implements Runnable {
 
 	/** Calculate the similarities between a given movie and the rest of the movies **/
 	public void calcSimilarity(CalcData calcData) {
-		
+
 		// Create an empty array of 17,770 elements
-		// TODO: Initialize all elements to zero
 		vCount = new Ratings[calcData.getTotalMovies()];
-		
+
 		List<RateUnit> m1History = movieManager.getUsersByMovieID(calcData.getMovieID());
 
 		// For each user who rated movie 1
@@ -66,6 +65,10 @@ public class PearsonDist implements Runnable {
 				int r2 = m2.getRating();    // The rating viewer gave to m2
 
 				// Increment the rating
+				if (vCount[m2.getID() - 1] == null) {
+					vCount[m2.getID() - 1] = new Ratings();
+				}
+
 				vCount[m2.getID() - 1].rate(r1, r2);
 
 			}
@@ -74,6 +77,12 @@ public class PearsonDist implements Runnable {
 		// Done caching data, time to calculate sims
 		for (int m = 0; m < calcData.getTotalMovies(); m++) {
 			Ratings ratings = vCount[m];
+			
+			// Check if there is no intersection
+			if (ratings == null) {
+				return;
+			}
+			
 			float sumX = ratings.findSumX();
 			float sumY = ratings.findSumY();
 			float sumXY = ratings.findXY();
@@ -81,8 +90,7 @@ public class PearsonDist implements Runnable {
 			float sumYY = ratings.findYY();
 			int num = ratings.getCounter();
 
-			float denomitor = (float) Math.sqrt((num * sumXX - sumX * sumX) * 
-												(num * sumYY - sumY * sumY));
+			float denomitor = (float) Math.sqrt((num * sumXX - sumX * sumX) * (num * sumYY - sumY * sumY));
 			float simularity = ((sumXY * num) - (sumX * sumY)) / denomitor;
 
 			ratings.setSimularity(simularity);
@@ -90,14 +98,17 @@ public class PearsonDist implements Runnable {
 
 		// Synchronize out to prevent threads from interleaving prints
 		synchronized(out) {
-			
+
 			// Movies may be printed out of order, so we begin the line with movie ID
 			out.print(calcData.getMovieID() + " ");
 
 			for(int i = 0; i < calcData.getTotalMovies(); ++ i) {
-				out.print(KNNApp.FORMAT_PRECISION.format(vCount[i].getSimularity()) + " ");
+				
+				// Print zero if vCount is null (no intersection), otherwise print similarity
+				float sim = (vCount[i] == null)? 0 : vCount[i].getSimularity();
+				out.print(KNNApp.FORMAT_PRECISION.format(sim + " "));
 			}
-			
+
 			// New line for next movie
 			out.println();
 		}
