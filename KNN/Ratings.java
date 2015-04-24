@@ -6,15 +6,9 @@
 public class Ratings {
     private final static int SIZE = 5;
 
-    private int[][] intRates;
-    private int counter;
+    private int[][] intRates = new int[SIZE][SIZE];
+    private int counter = 0;
     private float simularity;
-
-    /** Constructor **/
-    public Ratings() {
-    	this.counter = 0;
-    	this.intRates = new int[SIZE][SIZE];
-    }
     
     /** Increment the count at the specified location **/
     public void rate(int i, int j) {
