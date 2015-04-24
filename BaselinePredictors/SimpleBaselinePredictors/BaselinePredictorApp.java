@@ -23,15 +23,15 @@ public class BaselinePredictorApp {
 	// Fields
 	/** Location of training data file **/
 	public static String TRAIN_FILE_LOC = 
-			"/Users/debranangel/Documents/2014-15/NetflixData/um_sorted/trainingAll.dta";
+			"/Users/debbie1/Documents/NetflixData/um_sorted/trainingAll.dta";
 
 	/** Location of test data file **/
 	public static String TEST_FILE_LOC = 
-			"/Users/debranangel/Documents/2014-15/NetflixData/um_sorted/trainingAll.dta";
+			"/Users/debbie1/Documents/NetflixData/um_sorted/test.dta";
 	
 	/** Location of folder for output files **/
 	public static String OUTPUT_FOLDER = 
-			"/Users/debranangel/Documents/2014-15/NetflixData/output/";
+			"/Users/debbie1/Documents/NetflixData/output/";
 
 	/** Collections of all user IDs and movie IDs. **/
 	public HashMap<Integer, UserProfile> allUsers;
@@ -152,7 +152,7 @@ public class BaselinePredictorApp {
 			while ((line = br.readLine()) != null) {
 				
 				count++;
-				if (count % 1000000 == 0) {
+				if (count % 10000000 == 0) {
 					System.out.println(count);
 				}
 				

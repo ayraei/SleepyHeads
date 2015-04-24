@@ -98,7 +98,7 @@ public class UserDriftTask implements Runnable {
 	@SuppressWarnings("null")
 	public void getDependencies() {
 		// Dependencies to do:
-		Runnable[] tasks = null;
+		Runnable[] tasks = new Runnable[2];
 		int i = 0;
 
 		// Check if userDriftFunction.dta exists, otherwise create it
@@ -110,7 +110,7 @@ public class UserDriftTask implements Runnable {
 		}
 
 		// Check if avgDateUser.dta exists, otherwise call on AvgDayUserTask to create it
-		File avgDateFile = new File(BaselinePredictorApp.OUTPUT_FOLDER + "avgDateUser.dta");
+		File avgDateFile = new File(BaselinePredictorApp.OUTPUT_FOLDER + "avgDateUsers.dta");
 		if (!avgDateFile.exists())
 		{
 			tasks[i] = new AvgDateUserTask(app);
@@ -155,7 +155,7 @@ public class UserDriftTask implements Runnable {
 
 		try {
 			brDrift = new BufferedReader(new FileReader(BaselinePredictorApp.OUTPUT_FOLDER + "userDriftFunction.dta"));
-			brAvgDate = new BufferedReader(new FileReader(BaselinePredictorApp.OUTPUT_FOLDER + "avgDateUser.dta"));
+			brAvgDate = new BufferedReader(new FileReader(BaselinePredictorApp.OUTPUT_FOLDER + "avgDateUsers.dta"));
 		
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
