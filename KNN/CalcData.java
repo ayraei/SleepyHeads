@@ -1,31 +1,27 @@
-import java.util.HashMap;
 
+/** 
+ * Basic object representing a movie to be queued
+ */
 public class CalcData {
-    private final Integer row;
-    private final Integer column;
-    private final HashMap<Integer, Integer> m1;
-    private final HashMap<Integer, Integer> m2;
+    private final Integer index;
+    private final Integer movieId;
+    private final Integer totalMovies;
 
-    public CalcData(Integer row, Integer column, HashMap<Integer, Integer> m1, HashMap<Integer, Integer> m2) {
-        this.row = row;
-        this.column = column;
-        this.m1 = m1;
-        this.m2 = m2;
+    public CalcData(Integer index, Integer movieId, Integer totalMovies) {
+        this.index = index;
+        this.movieId = movieId;
+        this.totalMovies = totalMovies;
     }
 
-    public Integer getRow() {
-        return row;
+    public Integer getIndex() {
+        return index;
     }
 
-    public Integer getColumn() {
-        return column;
+    public Integer getMovieID() {
+        return movieId;
     }
 
-    public HashMap<Integer, Integer> getM1() {
-        return m1;
-    }
-
-    public HashMap<Integer, Integer> getM2() {
-        return m2;
+    public Integer getTotalMovies() {
+        return totalMovies;
     }
 }

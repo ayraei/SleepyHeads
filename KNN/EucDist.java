@@ -13,12 +13,12 @@ public class EucDist implements Runnable {
 
     /** Fields **/
     private int threadID;
-    private final BlockingQueue<CalcData> queue;
+    private final BlockingQueue<CopyOfCalcData> queue;
     private final Matrix results;
     private final CalcStatistics statistics;
 
     /** Constructor **/
-    public EucDist(int t, BlockingQueue<CalcData> queue, Matrix results, CalcStatistics statistics) {
+    public EucDist(int t, BlockingQueue<CopyOfCalcData> queue, Matrix results, CalcStatistics statistics) {
         this.threadID = t;
         this.queue = queue;
         this.results = results;
@@ -29,7 +29,7 @@ public class EucDist implements Runnable {
     public void run() {
         while (true) {
             try {
-                CalcData calcData = queue.take();
+            	CopyOfCalcData calcData = queue.take();
                 if (calcData.getRow() == -1) {
                     break;
                 }
@@ -46,7 +46,7 @@ public class EucDist implements Runnable {
         System.out.println("ThreadId " + threadID + " ended.");
     }
 
-    public double calcSimilarity(CalcData calcData) {
+    public double calcSimilarity(CopyOfCalcData calcData) {
         HashMap<Integer, Integer> m1 = calcData.getM1();
         HashMap<Integer, Integer> m2 = calcData.getM2();
 

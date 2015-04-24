@@ -1,10 +1,11 @@
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class CalcStatistics {
     private final Date startTime = new Date();
     private final AtomicInteger processedCount = new AtomicInteger(0);
-    private Integer totalCount = 200000000;
+    private Integer totalCount = 1;
 
     public long incAndGet() {
         return processedCount.incrementAndGet();

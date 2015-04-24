@@ -1,42 +1,44 @@
+
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.concurrent.BlockingQueue;
+
 /**
  * Use Pearson coefficient to calculate similarity between two movies
  */
-
-import Jama.Matrix;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.BlockingQueue;
-
 public class PearsonDist implements Runnable {
 
 	/** Fields **/
 	private int threadID;
-	private final BlockingQueue<Integer> queue;
+	private final BlockingQueue<CalcData> queue;
 	private final CalcStatistics statistics;
-	private KNNApp app;
-	private char[][][] vCount;
-	private short[][][] overflows;
+	private MovieManager movieManager;
+	private PrintWriter out;
+	private Ratings[] vCount;
 
 	/** Constructor **/
-	public PearsonDist(int t, BlockingQueue<Integer> queue, CalcStatistics statistics, KNNApp a) {
+	public PearsonDist(int t, BlockingQueue<CalcData> queue, CalcStatistics statistics, MovieManager movieManager, PrintWriter out) {
 		this.threadID = t;
 		this.queue = queue;
 		this.statistics = statistics;
-		this.app = a;
+		this.movieManager = movieManager;
+		this.out = out;
 	}
 
 	@Override
 	public void run() {
+
+		// Keep grabbing from queue
 		while (true) {
 			try {
-				int m1 = queue.take();
-				if (m1 == -1) {
+				CalcData calcData = queue.take();
+
+				// End of data, signals thread to stop running
+				if (calcData.getIndex() == -1) {
 					break;
 				}
 
-				calcSimilarity(m1);
+				calcSimilarity(calcData);
 				statistics.incAndGet();
 
 			} catch (InterruptedException e) {
@@ -46,41 +48,59 @@ public class PearsonDist implements Runnable {
 		System.out.println("ThreadId " + threadID + " ended.");
 	}
 
-	public void calcSimilarity(int m1) {
-		vCount = new char[5][KNNApp.NUM_MOVIES][5];
-		overflows = new short[5][KNNApp.NUM_MOVIES][5];
-		HashMap<Integer, Integer> m1History = app.movieHashMap.get(m1);
+	/** Calculate the similarities between a given movie and the rest of the movies **/
+	public void calcSimilarity(CalcData calcData) {
 		
-		// For each user who rated movie X
-		for (Integer viewer : m1History.keySet()) {
-			int r1 = m1History.get(viewer);                      // The rating viewer gave to m1
+		// Create an empty array of 17,770 elements
+		// TODO: Initialize all elements to zero
+		vCount = new Ratings[calcData.getTotalMovies()];
+		
+		List<RateUnit> m1History = movieManager.getUsersByMovieID(calcData.getMovieID());
 
-			// For each movie Y rated by the user
-			for (Integer m2 : app.userHashMap.get(viewer).values()) {
-				int r2 = app.userHashMap.get(viewer).get(m2);    // The rating viewer gave to m2
+		// For each user who rated movie 1
+		for (RateUnit viewer : m1History) {
+			int r1 = viewer.getRating();    // The rating viewer gave to m1
+
+			// For each movie 2 rated by the user
+			for (RateUnit m2 : movieManager.getMoviesByUserId(viewer.getID())) {
+				int r2 = m2.getRating();    // The rating viewer gave to m2
 
 				// Increment the rating
-				vCount[r1][m2][r2]++;
+				vCount[m2.getID() - 1].rate(r1, r2);
 
-				// Catch overflow beyond 255
-				if (0 == vCount[r1][m2][r2]) {
-					overflows[r1][m2][r2]++;
-				}
 			}
 		}
-		
+
 		// Done caching data, time to calculate sims
-		for (int m2 = 0; m2 < KNNApp.NUM_MOVIES; m2++) {
-			float s1;    //sum of ratings for movie X
-		    float s2;    //sum of ratings for movie Y
-		    float p12;   //sum of product of ratings for movies X and Y
-		    float p11;   //sum of square of ratings for movie X
-		    float p22;   //sum of square of ratings for movie Y
-		    int numIntersect; //number of viewers who rated both movies
-		    
-		    
+		for (int m = 0; m < calcData.getTotalMovies(); m++) {
+			Ratings ratings = vCount[m];
+			float sumX = ratings.findSumX();
+			float sumY = ratings.findSumY();
+			float sumXY = ratings.findXY();
+			float sumXX = ratings.findXX();
+			float sumYY = ratings.findYY();
+			int num = ratings.getCounter();
+
+			float denomitor = (float) Math.sqrt((num * sumXX - sumX * sumX) * 
+												(num * sumYY - sumY * sumY));
+			float simularity = ((sumXY * num) - (sumX * sumY)) / denomitor;
+
+			ratings.setSimularity(simularity);
 		}
-		
+
+		// Synchronize out to prevent threads from interleaving prints
+		synchronized(out) {
+			
+			// Movies may be printed out of order, so we begin the line with movie ID
+			out.print(calcData.getMovieID() + " ");
+
+			for(int i = 0; i < calcData.getTotalMovies(); ++ i) {
+				out.print(KNNApp.FORMAT_PRECISION.format(vCount[i].getSimularity()) + " ");
+			}
+			
+			// New line for next movie
+			out.println();
+		}
 
 	}
 

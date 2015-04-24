@@ -47,7 +47,7 @@ public class CopyOfKNNApp {
 	public HashMap<Integer, HashMap<Integer, Integer>> movieHash;
 
 	private final static int QUEUE_CAPACITY = 400;
-	private final static BlockingQueue<CalcData> queue = new LinkedBlockingQueue<CalcData>(QUEUE_CAPACITY);
+	private final static BlockingQueue<CopyOfCalcData> queue = new LinkedBlockingQueue<CopyOfCalcData>(QUEUE_CAPACITY);
 	private final static CalcStatistics statistics = new CalcStatistics();
 	private final static int THREAD_COUNT = 8;
 
@@ -142,7 +142,7 @@ public class CopyOfKNNApp {
 				HashMap<Integer, Integer> u = app.movieHash.get(m2Iterator.next());
 				
 				if (column >= row) {
-					CalcData calcData = new CalcData(row, column, u, v);
+					CopyOfCalcData calcData = new CopyOfCalcData(row, column, u, v);
 					
 					try {
 						queue.put(calcData);
@@ -159,7 +159,7 @@ public class CopyOfKNNApp {
 		
 		// Mark end of data
 		for (int t = 0; t < THREAD_COUNT; t++) {
-			CalcData calcData = new CalcData(-1, -1, null, null);
+			CopyOfCalcData calcData = new CopyOfCalcData(-1, -1, null, null);
 			
 			try {
 				queue.put(calcData);
