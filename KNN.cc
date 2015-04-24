@@ -69,7 +69,7 @@ void findInsersections(int m1)
 
      // For each user who rated movie X
     for (auto viewer : m1History) {
-        r1 = m1History.find(viewer);    // The rating viewer gave to m1
+        r1 = m1History.find(viewer);                   // The rating viewer gave to m1
 
         // For each movie Y rated by the user
         for (auto m2 : userHashMap.find(viewer)) {
