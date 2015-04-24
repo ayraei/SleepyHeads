@@ -106,7 +106,7 @@ public class PearsonDist implements Runnable {
 				
 				// Print zero if vCount is null (no intersection), otherwise print similarity
 				float sim = (vCount[i] == null)? 0 : vCount[i].getSimularity();
-				out.print(KNNApp.FORMAT_PRECISION.format(sim + " "));
+				out.print(KNNApp.FORMAT_PRECISION.format(sim) + " ");
 			}
 
 			// New line for next movie

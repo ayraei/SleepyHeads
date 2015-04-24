@@ -70,9 +70,12 @@ public class MovieManager {
 		for (int i = 0; i < RATE_SIZE; ++i) {
 			Map<Integer, List<Integer>> m = movieRates.get(i);
 			List<Integer> users = m.get(movieId);
-
-			for (Integer userID : users) {
-				list.add(new RateUnit(userID, i + 1));
+			
+			// Add all the users if there are any
+			if (users != null) {
+				for (Integer userID : users) {
+					list.add(new RateUnit(userID, i + 1));
+				}
 			}
 		}
 		return list;
@@ -87,8 +90,11 @@ public class MovieManager {
 			Map<Integer, List<Integer>> m = userRates.get(i);
 			List<Integer> movies = m.get(userId);
 
-			for (Integer movieID : movies) {
-				list.add(new RateUnit(movieID, i + 1));
+			// Add all the movies if there are any
+			if (movies != null) {
+				for (Integer movieID : movies) {
+					list.add(new RateUnit(movieID, i + 1));
+				}
 			}
 		}
 		return list;
