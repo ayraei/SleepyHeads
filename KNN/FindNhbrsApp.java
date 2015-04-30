@@ -264,13 +264,9 @@ public class FindNhbrsApp {
 				    prediction += nhbrs.get(q).getMAvg() + dif;
 				}
 				
-				if (targetMovie == 17764) {
-					System.out.println("here");
-				}
-				
 				prediction = prediction / total;			
-				out.println(targetMovie + " " + FORMAT_PRECISION.format(prediction));
-				
+				out.println(FORMAT_PRECISION.format(prediction));
+				out.flush();
 			}
 
 		} catch (IOException e) {
