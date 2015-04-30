@@ -84,7 +84,7 @@ public class PearsonDist implements Runnable {
 
 			// Check if there is no intersection
 			if (ratings == null) {
-				return;
+				continue;
 			}
 
 			float sumX = ratings.findSumX();
@@ -121,7 +121,8 @@ public class PearsonDist implements Runnable {
 			}
 
 			// New line for next movie
-			outSims.println();
+			outSims.println(" ");
+			outSims.flush();
 		}
 
 		// Synchronize out to prevent threads from interleaving prints
@@ -137,6 +138,7 @@ public class PearsonDist implements Runnable {
 
 			// New line for next movie
 			outCount.println();
+			outCount.flush();
 		}
 	}
 }

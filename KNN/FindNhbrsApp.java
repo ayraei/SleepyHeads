@@ -199,9 +199,10 @@ public class FindNhbrsApp {
 		count = 0;
 		try {
 			while ((lineTest = brTest.readLine()) != null) {
-
+				//System.out.println(lineTest);
+				
 				// Print progress
-				if (count % 1000000 == 0) {
+				if (count % 200000 == 0) {
 					System.out.println(count);
 				}
 				count++;
@@ -215,7 +216,8 @@ public class FindNhbrsApp {
 				ArrayList<MovieNeighbor> nhbrs = new ArrayList<MovieNeighbor>();
 				
 				for (RateUnit movie : movieHistory) {
-					if (cv[targetMovie][movie.getID()] < minCV) {
+					if (cv[targetMovie][movie.getID()] > minCV) {
+						
 						MovieNeighbor n = new MovieNeighbor();
 						
 						n.setCV(cv[targetMovie][movie.getID()]);
@@ -262,14 +264,14 @@ public class FindNhbrsApp {
 				    prediction += nhbrs.get(q).getMAvg() + dif;
 				}
 				
-				prediction = prediction / total;
+				if (targetMovie == 17764) {
+					System.out.println("here");
+				}
 				
-				out.println(FORMAT_PRECISION.format(prediction));
+				prediction = prediction / total;			
+				out.println(targetMovie + " " + FORMAT_PRECISION.format(prediction));
 				
 			}
-			
-			// Make new line for next prediction
-			out.println(" ");
 
 		} catch (IOException e) {
 			e.printStackTrace();
