@@ -13,16 +13,19 @@ public class PearsonDist implements Runnable {
 	private final BlockingQueue<CalcData> queue;
 	private final CalcStatistics statistics;
 	private MovieManager movieManager;
-	private PrintWriter out;
+	private PrintWriter outSims;
+	private PrintWriter outCount;
 	private Ratings[] vCount;
+	private int[] commonViewers;
 
 	/** Constructor **/
-	public PearsonDist(int t, BlockingQueue<CalcData> queue, CalcStatistics statistics, MovieManager movieManager, PrintWriter out) {
+	public PearsonDist(int t, BlockingQueue<CalcData> queue, CalcStatistics statistics, MovieManager movieManager, PrintWriter out, PrintWriter out2) {
 		this.threadID = t;
 		this.queue = queue;
 		this.statistics = statistics;
 		this.movieManager = movieManager;
-		this.out = out;
+		this.outSims = out;
+		this.outCount = out2;
 	}
 
 	@Override
@@ -45,7 +48,7 @@ public class PearsonDist implements Runnable {
 				e.printStackTrace();
 			}
 		}
-		System.out.println("ThreadId " + threadID + " ended.");
+		System.out.println("ThreadID " + threadID + " ended.");
 	}
 
 	/** Calculate the similarities between a given movie and the rest of the movies **/
@@ -53,6 +56,7 @@ public class PearsonDist implements Runnable {
 
 		// Create an empty array of 17,770 elements
 		vCount = new Ratings[calcData.getTotalMovies()];
+		commonViewers = new int[calcData.getTotalMovies()];
 
 		List<RateUnit> m1History = movieManager.getUsersByMovieID(calcData.getMovieID());
 
@@ -77,12 +81,12 @@ public class PearsonDist implements Runnable {
 		// Done caching data, time to calculate sims
 		for (int m = 0; m < calcData.getTotalMovies(); m++) {
 			Ratings ratings = vCount[m];
-			
+
 			// Check if there is no intersection
 			if (ratings == null) {
 				return;
 			}
-			
+
 			float sumX = ratings.findSumX();
 			float sumY = ratings.findSumY();
 			float sumXY = ratings.findXY();
@@ -91,28 +95,48 @@ public class PearsonDist implements Runnable {
 			int num = ratings.getCounter();
 
 			float denomitor = (float) Math.sqrt((num * sumXX - sumX * sumX) * (num * sumYY - sumY * sumY));
-			float simularity = ((sumXY * num) - (sumX * sumY)) / denomitor;
+			float simularity;
+			if (denomitor == 0) {
+				simularity = 0;
+			} else {
+				simularity = ((sumXY * num) - (sumX * sumY)) / denomitor;
+			}
 
 			ratings.setSimularity(simularity);
+			commonViewers[m] = num;
+
 		}
 
 		// Synchronize out to prevent threads from interleaving prints
-		synchronized(out) {
+		synchronized(outSims) {
 
 			// Movies may be printed out of order, so we begin the line with movie ID
-			out.print(calcData.getMovieID() + " ");
+			outSims.print(calcData.getMovieID() + " ");
 
 			for(int i = 0; i < calcData.getTotalMovies(); ++ i) {
-				
+
 				// Print zero if vCount is null (no intersection), otherwise print similarity
 				float sim = (vCount[i] == null)? 0 : vCount[i].getSimularity();
-				out.print(KNNApp.FORMAT_PRECISION.format(sim) + " ");
+				outSims.print(CalculateSimApp.FORMAT_PRECISION.format(sim) + " ");
 			}
 
 			// New line for next movie
-			out.println();
+			outSims.println();
 		}
 
-	}
+		// Synchronize out to prevent threads from interleaving prints
+		synchronized(outCount) {
 
+			// Movies may be printed out of order, so we begin the line with movie ID
+			outCount.print(calcData.getMovieID() + " ");
+
+			for(int i = 0; i < calcData.getTotalMovies(); i++){
+				int count = commonViewers[i];
+				outCount.print(count + " ");
+			}
+
+			// New line for next movie
+			outCount.println();
+		}
+	}
 }
