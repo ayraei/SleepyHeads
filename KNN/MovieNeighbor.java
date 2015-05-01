@@ -43,12 +43,21 @@ public class MovieNeighbor {
 	}
 
 	void calcRLower() {
-		float rl = (float) (1.96 * (Math.log((1 + this.rRaw) / (1 - this.rRaw)) / 2) -
-				(Math.sqrt(1 / (this.commonViewers) - 3)));
-		rl = (float) ((Math.exp(2 * rl) - 1) / (Math.exp(2 * rl) + 1));
+		/*
+		 * Steps for computing a confidence interval: 
+		 * 1. Convert r to z with Fisher's z transformation
+		 * 2. Compute a confidence interval in terms of z
+		 * 3. Convert the confidence interval back to r
+		 * where Z for a 95% confidence interval is 1.96. Alternatively, we
+		 * could use a stricter 99% confidence interval (Z = 2.58).
+		 */
+		double zr = 0.5 * Math.log((1 + (double) this.rRaw) / (1 - (double) this.rRaw));
+		double interval = 1.96 * Math.sqrt(1 / ((double) this.commonViewers - 3.0));
+		zr -= interval;
+		float rl = (float) ((Math.exp(2 * zr) - 1) / (Math.exp(2 * zr) + 1));
 		
 		// Check if same sign
-		if (this.rLower * rl < 0) {
+		if (this.rRaw * rl < 0) {
 			rl = 0;
 		}
 		setRLower(rl);	

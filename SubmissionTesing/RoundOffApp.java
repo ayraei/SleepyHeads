@@ -15,9 +15,9 @@ public class RoundOffApp {
 
 	/** Input and output files **/
 	private static String INPUT_PREDICT_LOC =
-			"/Users/debbie1/Documents/NetflixData/output/KNN_predictions.dta";
+			"/Users/debbie1/Documents/NetflixData/output/KNN_predictions_probe.dta";
 	private static String OUTPUT_PREDICT_LOC =
-			"/Users/debbie1/Documents/NetflixData/output/KNN_predictions_rounded.dta";
+			"/Users/debbie1/Documents/NetflixData/output/KNN_predictions_probe_rounded.dta";
 
 	/** Level of reported precision (3 decimal places) **/
 	public static DecimalFormat FORMAT_PRECISION = new DecimalFormat("0.000");
