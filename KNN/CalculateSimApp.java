@@ -21,6 +21,8 @@ public class CalculateSimApp {
 			"/Users/debbie1/Documents/NetflixData/output/sim_pearson.dta";
 	private static String OUTPUT_NUM_COMMON_VIEWERS_LOC =
 			"/Users/debbie1/Documents/NetflixData/output/commonViewers.dta";
+	private static String OUTPUT_SUM_COMMON_VIEWERS_LOC =
+			"/Users/debbie1/Documents/NetflixData/output/commonViewers_sums.dta";
 
 	/** Level of reported precision (3 decimal places) **/
 	public static DecimalFormat FORMAT_PRECISION = new DecimalFormat("0.000");
@@ -46,11 +48,15 @@ public class CalculateSimApp {
 		try{
 			File simFile = new File(OUTPUT_SIM_LOC);
 			File ncmFile = new File(OUTPUT_NUM_COMMON_VIEWERS_LOC);
+			File scmFile = new File(OUTPUT_SUM_COMMON_VIEWERS_LOC);
 			if (simFile.exists()) {
 				simFile.delete();
 			}
 			if (ncmFile.exists()) {
 				ncmFile.delete();
+			}
+			if (scmFile.exists()) {
+				scmFile.delete();
 			}
 		} catch(Exception e){
 			e.printStackTrace();
@@ -97,9 +103,11 @@ public class CalculateSimApp {
 		// Prepare to print out similarities
 		PrintWriter out = null;
 		PrintWriter out2 = null;
+		PrintWriter out3 = null;
 		try {
 			out = new PrintWriter(new FileOutputStream(OUTPUT_SIM_LOC, true));
 			out2 = new PrintWriter(new FileOutputStream(OUTPUT_NUM_COMMON_VIEWERS_LOC, true));
+			out3 = new PrintWriter(new FileOutputStream(OUTPUT_SUM_COMMON_VIEWERS_LOC, true));
 
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
@@ -114,7 +122,7 @@ public class CalculateSimApp {
 		// Calculate similarities with multi-threading
 		ExecutorService executor = Executors.newFixedThreadPool(THREAD_COUNT);
 		for (int t = 0; t < THREAD_COUNT; t++) {
-			Runnable worker = new PearsonDist(t, queue, statistics, movieManager, out, out2);
+			Runnable worker = new PearsonDist(t, queue, statistics, movieManager, out, out2, out3);
 			executor.execute(worker);
 		}
 
@@ -160,6 +168,6 @@ public class CalculateSimApp {
 		System.out.println("done calculating similarities");
 		out.close();
 		out2.close();
-
+		out3.close();
 	}
 }

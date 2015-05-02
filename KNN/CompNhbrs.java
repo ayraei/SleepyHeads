@@ -1,13 +1,11 @@
 import java.util.Comparator;
 
 public class CompNhbrs implements Comparator<MovieNeighbor>{
-	 
-    @Override
-    public int compare(MovieNeighbor m1, MovieNeighbor m2) {
-        if(m1.getWeight() < m2.getWeight()){
-            return 1;
-        } else {
-            return -1;
-        }
-    }
+
+	@Override
+	public int compare(MovieNeighbor m1, MovieNeighbor m2) {
+		Float f1 = new Float(m1.getWeight());
+		Float f2 = new Float(m2.getWeight());
+		return f2.compareTo(f1);
+	}
 }

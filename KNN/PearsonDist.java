@@ -15,17 +15,20 @@ public class PearsonDist implements Runnable {
 	private MovieManager movieManager;
 	private PrintWriter outSims;
 	private PrintWriter outCount;
+	private PrintWriter outSums;
 	private Ratings[] vCount;
 	private int[] commonViewers;
+	private float[] sumsX;
 
 	/** Constructor **/
-	public PearsonDist(int t, BlockingQueue<CalcData> queue, CalcStatistics statistics, MovieManager movieManager, PrintWriter out, PrintWriter out2) {
+	public PearsonDist(int t, BlockingQueue<CalcData> queue, CalcStatistics statistics, MovieManager movieManager, PrintWriter out, PrintWriter out2, PrintWriter out3) {
 		this.threadID = t;
 		this.queue = queue;
 		this.statistics = statistics;
 		this.movieManager = movieManager;
 		this.outSims = out;
 		this.outCount = out2;
+		this.outSums = out3;
 	}
 
 	@Override
@@ -57,6 +60,7 @@ public class PearsonDist implements Runnable {
 		// Create an empty array of 17,770 elements
 		vCount = new Ratings[calcData.getTotalMovies()];
 		commonViewers = new int[calcData.getTotalMovies()];
+		sumsX = new float[calcData.getTotalMovies()];
 
 		List<RateUnit> m1History = movieManager.getUsersByMovieID(calcData.getMovieID());
 
@@ -104,8 +108,10 @@ public class PearsonDist implements Runnable {
 
 			ratings.setSimularity(simularity);
 			commonViewers[m] = num;
+			sumsX[m] = sumX;
 
 		}
+
 
 		// Synchronize out to prevent threads from interleaving prints
 		synchronized(outSims) {
@@ -139,6 +145,21 @@ public class PearsonDist implements Runnable {
 			// New line for next movie
 			outCount.println();
 			outCount.flush();
+		}
+
+		synchronized(outSums) {
+
+			// Movies may be printed out of order, so we begin the line with movie ID
+			outSums.print(calcData.getMovieID() + " ");
+
+			for(int i = 0; i < calcData.getTotalMovies(); i++) {
+				float sum = sumsX[i];
+				outSums.print(CalculateSimApp.FORMAT_PRECISION.format(sum) + " ");
+			}
+
+			// New line for next movie
+			outSums.println();
+			outSums.flush();
 		}
 	}
 }
