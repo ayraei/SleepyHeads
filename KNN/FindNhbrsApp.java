@@ -229,6 +229,7 @@ public class FindNhbrsApp {
 				
 				// Get predictions from neighbors
 				float prediction = 0;
+				float totalWeight = 0;
 				for (int q = 0; q < total; q++) {
 					float dif = nhbrs.get(q).getNRating() - nhbrs.get(q).getNAvg();
 					
@@ -236,9 +237,10 @@ public class FindNhbrsApp {
 				    	dif = -dif;
 				    }
 				    prediction += nhbrs.get(q).getWeight() * (nhbrs.get(q).getMAvg() + dif);
+				    totalWeight += nhbrs.get(q).getWeight();
 				}
 				
-				prediction = prediction / total;			
+				prediction = prediction / totalWeight;			
 				out.println(FORMAT_PRECISION.format(prediction));
 				out.flush();
 			}
@@ -248,5 +250,6 @@ public class FindNhbrsApp {
 		}
 
 		System.out.println("done making predictions!");
+		out.close();
 	}
 }
