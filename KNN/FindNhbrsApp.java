@@ -235,7 +235,7 @@ public class FindNhbrsApp {
 				    if (nhbrs.get(q).getRRaw() < 0) {
 				    	dif = -dif;
 				    }
-				    prediction += nhbrs.get(q).getMAvg() + dif;
+				    prediction += nhbrs.get(q).getWeight() * (nhbrs.get(q).getMAvg() + dif);
 				}
 				
 				prediction = prediction / total;			
