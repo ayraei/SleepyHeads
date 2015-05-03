@@ -241,7 +241,11 @@ public class FindNhbrsApp {
 						}
 						
 						n.calcWeight();
-
+						
+						if (n.nAvg > 5 || n.nAvg < 1) {
+							System.out.println("here");
+						}
+						
 						nhbrs.add(n);
 					}
 				}
@@ -278,10 +282,6 @@ public class FindNhbrsApp {
 				}
 				
 				prediction = prediction / totalWeight;
-				
-				if (!(prediction == prediction)) {
-					System.out.println("here");
-				}
 				
 				out.println(FORMAT_PRECISION.format(prediction));
 				out.flush();
