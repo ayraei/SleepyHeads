@@ -41,10 +41,10 @@ public class FindNhbrsApp {
 	public static int NUM_MOVIES = 17770;
 
 	/** Arrays **/
-	public static float[][] sims = new float[NUM_MOVIES + 1][NUM_MOVIES + 1];
-	public static float[][] sums = new float[NUM_MOVIES + 1][NUM_MOVIES + 1];
-	public static int[][] cv = new int[NUM_MOVIES + 1][NUM_MOVIES + 1];
-	public static float[] movieAllViewersAvgs = new float[NUM_MOVIES + 1];
+	public static float[][] sims = new float[NUM_MOVIES][NUM_MOVIES];
+	public static float[][] sums = new float[NUM_MOVIES][NUM_MOVIES];
+	public static int[][] cv = new int[NUM_MOVIES][NUM_MOVIES];
+	public static float[] movieAllViewersAvgs = new float[NUM_MOVIES];
 
 	/** Program entry point **/
 	public static void main(String[] args) {
@@ -134,9 +134,9 @@ public class FindNhbrsApp {
 				String[] input = lineSims.split("\\s+");
 				String[] input2 = lineCV.split("\\s+");
 				String[] input3 = lineSums.split("\\s+");
-				int movieID = Integer.parseInt(input[0]);
+				int movieID = Integer.parseInt(input[0]) - 1;
 
-				for (int i = 1; i <= NUM_MOVIES; i++) {
+				for (int i = 0; i < NUM_MOVIES; i++) {
 					sims[movieID][i] = Float.parseFloat(input[i]);
 					cv[movieID][i] = Integer.parseInt(input2[i]);
 					sums[movieID][i] = Float.parseFloat(input3[i]);
@@ -173,7 +173,7 @@ public class FindNhbrsApp {
 
 				// Read in data as a string array
 				String[] input = lineAvg.split("\\s+");
-				int movieID = Integer.parseInt(input[0]);
+				int movieID = Integer.parseInt(input[0]) - 1;
 				movieAllViewersAvgs[movieID] = Float.parseFloat(input[1]);
 			}
 
@@ -223,7 +223,7 @@ public class FindNhbrsApp {
 				ArrayList<MovieNeighbor> nhbrs = new ArrayList<MovieNeighbor>();
 
 				for (RateUnit movie : movieHistory) {
-					int totalCV = cv[targetMovie][movie.getID()];
+					int totalCV = cv[targetMovie - 1][movie.getID() - 1];
 
 					if (totalCV >= minCV) {
 
@@ -232,7 +232,7 @@ public class FindNhbrsApp {
 						n.setMAvg(sums[targetMovie - 1][movie.getID() - 1] / (float) totalCV);
 						n.setNAvg(sums[movie.getID() - 1][targetMovie - 1] / (float) totalCV);
 						n.setNRating(movie.getRating());
-						n.setRRaw(sims[targetMovie][movie.getID()]);
+						n.setRRaw(sims[targetMovie - 1][movie.getID() - 1]);
 						n.calcRLower();
 						n.calcWeight();
 
@@ -245,7 +245,7 @@ public class FindNhbrsApp {
 
 				// Create dummy neighbor for prediction
 				MovieNeighbor d = new MovieNeighbor();
-				d.setMAvg(movieAllViewersAvgs[targetMovie]);
+				d.setMAvg(movieAllViewersAvgs[targetMovie - 1]);
 				d.setNAvg(0);
 				d.setWeight((float) Math.log(minCV));
 
