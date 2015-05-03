@@ -17,6 +17,8 @@ public class FindNhbrsApp {
 			"/Users/debbie1/Documents/NetflixData/mu_sorted/trainingAll.dta";
 	private static String SIM_FILE_LOC =
 			"/Users/debbie1/Documents/NetflixData/output/sim_pearson.dta";
+	private static String AVG_FILE_LOC =
+			"/Users/debbie1/Documents/NetflixData/output/avgMovies.dta";
 	private static String COMMONV_FILE_LOC =
 			"/Users/debbie1/Documents/NetflixData/output/commonViewers.dta";
 	private static String COMMONS_FILE_LOC =
@@ -37,12 +39,12 @@ public class FindNhbrsApp {
 
 	/** Number of movies **/
 	public static int NUM_MOVIES = 17770;
-	
+
 	/** Arrays **/
 	public static float[][] sims = new float[NUM_MOVIES][NUM_MOVIES];
 	public static float[][] sums = new float[NUM_MOVIES][NUM_MOVIES];
 	public static int[][] cv = new int[NUM_MOVIES][NUM_MOVIES];
-	public static float[] movieAvgs = new float[NUM_MOVIES];
+	public static float[] movieAllViewersAvgs = new float[NUM_MOVIES];
 
 	/** Program entry point **/
 	public static void main(String[] args) {
@@ -59,7 +61,6 @@ public class FindNhbrsApp {
 		}
 
 // Create HashMaps ============================================================
-
 		// Create buffered reader for getting reading in data
 		String lineHash;
 		BufferedReader brHash = null;
@@ -99,7 +100,6 @@ public class FindNhbrsApp {
 		System.out.println("done creating hashmaps\n");
 
 // Load Sims and CVs ==========================================================
-
 		// Create buffered reader for getting reading in data
 		String lineSims;
 		String lineSums;
@@ -123,7 +123,7 @@ public class FindNhbrsApp {
 			while ((lineSims = brSims.readLine()) != null) {
 				lineCV = brCV.readLine();
 				lineSums = brSums.readLine();
-				
+
 				// Print progress
 				if (count % 3000 == 0) {
 					System.out.println(count);
@@ -148,7 +148,41 @@ public class FindNhbrsApp {
 		}
 
 		System.out.println("done loading sims, cv's, and sums into arrays \n");
+		
+// Load movie avgs ============================================================
+		// Create buffered reader for getting reading in data
+		String lineAvg;
+		BufferedReader brAvg = null;
+		try {
+			brAvg = new BufferedReader(new FileReader(AVG_FILE_LOC));
 
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+
+		// Read in each line to store data to memory
+		count = 0;
+		try {
+			while ((lineAvg = brAvg.readLine()) != null) {
+
+				// Print progress
+				if (count % 2000 == 0) {
+					System.out.println(count);
+				}
+				count++;
+
+				// Read in data as a string array
+				String[] input = lineAvg.split("\\s+");
+				int movieID = Integer.parseInt(input[0]) - 1;
+				movieAllViewersAvgs[movieID] = Float.parseFloat(input[1]);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		System.out.println("done creating avg array\n");
+		
 // Make Predictions ===========================================================
 		// Prepare to print out prediction
 		PrintWriter out = null;
@@ -159,7 +193,7 @@ public class FindNhbrsApp {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-				
+
 		// Create buffered reader for getting reading in test data
 		String lineTest;
 		BufferedReader brTest = null;
@@ -173,7 +207,7 @@ public class FindNhbrsApp {
 		count = 0;
 		try {
 			while ((lineTest = brTest.readLine()) != null) {
-				
+
 				// Print progress
 				if (count % 200000 == 0) {
 					System.out.println(count);
@@ -184,62 +218,66 @@ public class FindNhbrsApp {
 				String[] input = lineTest.split("\\s+");
 				int userID = Integer.parseInt(input[0]);
 				int targetMovie = Integer.parseInt(input[1]);
-				
+
 				List<RateUnit> movieHistory = movieManager.getMoviesByUserId(userID);
 				ArrayList<MovieNeighbor> nhbrs = new ArrayList<MovieNeighbor>();
-				
+
 				for (RateUnit movie : movieHistory) {
 					int totalCV = cv[targetMovie - 1][movie.getID() - 1];
-					
+
 					if (totalCV >= minCV) {
-						
+
 						MovieNeighbor n = new MovieNeighbor();					
 						n.setCV(totalCV);
-						n.setMAvg(sums[targetMovie - 1][movie.getID() - 1] / (float) totalCV);
-						n.setNAvg(sums[movie.getID() - 1][targetMovie - 1] / (float) totalCV);
+						
+						n.setMAvg(movieAllViewersAvgs[targetMovie - 1]);
+						n.setNAvg(movieAllViewersAvgs[movie.getID() - 1]);
+						
+						// n.setMAvg(sums[targetMovie - 1][movie.getID() - 1] / (float) totalCV);
+						// n.setNAvg(sums[movie.getID() - 1][targetMovie - 1] / (float) totalCV);
 						n.setNRating(movie.getRating());
 						n.setRRaw(sims[targetMovie - 1][movie.getID() - 1]);
 						n.calcRLower();
 						n.calcWeight();
-						
+
 						nhbrs.add(n);
-						
+
 					} else {
 						continue;
 					}
 				}
-				
+
 				// Create dummy neighbor for prediction
 				MovieNeighbor d = new MovieNeighbor();
-				d.setMAvg(movieAvgs[targetMovie - 1]);
+				d.setMAvg(movieAllViewersAvgs[targetMovie - 1]);
 				d.setNAvg(0);
 				d.setWeight((float) Math.log(minCV));
-				
+
 				nhbrs.add(d);
-				
+
 				// Pick at most K number neighbors with greatest weights
 				Collections.sort(nhbrs, new CompNhbrs());
-				
+
 				int total;
 				if (nhbrs.size() < K) {
 					total = nhbrs.size();
 				} else {
 					total = K;
 				}
-				
+
 				// Get predictions from neighbors
 				float prediction = 0;
 				float totalWeight = 0;
 				for (int q = 0; q < total; q++) {
 					float dif = nhbrs.get(q).getNRating() - nhbrs.get(q).getNAvg();
-					
-				    if (nhbrs.get(q).getRRaw() < 0) {
-				    	dif = -dif;
-				    }
-				    prediction += nhbrs.get(q).getWeight() * (nhbrs.get(q).getMAvg() + dif);
-				    totalWeight += nhbrs.get(q).getWeight();
+
+					if (nhbrs.get(q).getRRaw() < 0) {
+						dif = -dif;
+					}
+					prediction += nhbrs.get(q).getWeight() * (nhbrs.get(q).getMAvg() + dif);
+					totalWeight += nhbrs.get(q).getWeight();
 				}
-				
+
 				prediction = prediction / totalWeight;			
 				out.println(FORMAT_PRECISION.format(prediction));
 				out.flush();
