@@ -274,6 +274,7 @@ public class FindNhbrsApp {
 					totalWeight += nhbrs.get(q).getWeight();
 				}
 				
+				prediction = prediction / totalWeight;
 				out.println(FORMAT_PRECISION.format(prediction));
 				out.flush();
 			}
