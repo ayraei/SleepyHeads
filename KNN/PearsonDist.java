@@ -88,9 +88,9 @@ public class PearsonDist implements Runnable {
 
 			// Check if there is no intersection
 			if (ratings == null) {
-				ratings.setSimularity(0);
 				commonViewers[m] = 0;
 				sumsX[m] = 0;
+				continue;
 			}
 
 			float sumX = ratings.findSumX();
