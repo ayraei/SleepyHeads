@@ -233,7 +233,13 @@ public class FindNhbrsApp {
 						n.setNAvg(sums[movie.getID() - 1][targetMovie - 1] / (float) totalCV);
 						n.setNRating(movie.getRating());
 						n.setRRaw(sims[targetMovie - 1][movie.getID() - 1]);
-						n.calcRLower();
+						
+						if (n.getRRaw() == 1f) {
+							n.setRLower(1f);
+						} else {
+							n.calcRLower();
+						}
+						
 						n.calcWeight();
 
 						nhbrs.add(n);
@@ -273,7 +279,7 @@ public class FindNhbrsApp {
 				
 				prediction = prediction / totalWeight;
 				
-				if ((Float) prediction == null) {
+				if (!(prediction == prediction)) {
 					System.out.println("here");
 				}
 				
