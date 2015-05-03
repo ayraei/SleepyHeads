@@ -274,13 +274,6 @@ public class FindNhbrsApp {
 					totalWeight += nhbrs.get(q).getWeight();
 				}
 				
-				if (totalWeight == 0) {
-					System.out.println(prediction);
-					continue;
-				} else {
-					prediction = prediction / totalWeight;			
-				}
-				
 				out.println(FORMAT_PRECISION.format(prediction));
 				out.flush();
 			}

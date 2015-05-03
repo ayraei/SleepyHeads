@@ -88,7 +88,9 @@ public class PearsonDist implements Runnable {
 
 			// Check if there is no intersection
 			if (ratings == null) {
-				continue;
+				ratings.setSimularity(0);
+				commonViewers[m] = 0;
+				sumsX[m] = 0;
 			}
 
 			float sumX = ratings.findSumX();
@@ -118,46 +120,26 @@ public class PearsonDist implements Runnable {
 
 			// Movies may be printed out of order, so we begin the line with movie ID
 			outSims.print(calcData.getMovieID() + " ");
-
 			for(int i = 0; i < calcData.getTotalMovies(); ++ i) {
-
-				// Print zero if vCount is null (no intersection), otherwise print similarity
 				float sim = (vCount[i] == null)? 0 : vCount[i].getSimularity();
 				outSims.print(CalculateSimApp.FORMAT_PRECISION.format(sim) + " ");
 			}
-
-			// New line for next movie
 			outSims.println(" ");
 			outSims.flush();
-		}
 
-		// Synchronize out to prevent threads from interleaving prints
-		synchronized(outCount) {
-
-			// Movies may be printed out of order, so we begin the line with movie ID
 			outCount.print(calcData.getMovieID() + " ");
-
 			for(int i = 0; i < calcData.getTotalMovies(); i++){
 				int count = commonViewers[i];
 				outCount.print(count + " ");
 			}
-
-			// New line for next movie
 			outCount.println();
 			outCount.flush();
-		}
 
-		synchronized(outSums) {
-
-			// Movies may be printed out of order, so we begin the line with movie ID
 			outSums.print(calcData.getMovieID() + " ");
-
 			for(int i = 0; i < calcData.getTotalMovies(); i++) {
 				float sum = sumsX[i];
 				outSums.print(CalculateSimApp.FORMAT_PRECISION.format(sum) + " ");
 			}
-
-			// New line for next movie
 			outSums.println();
 			outSums.flush();
 		}
