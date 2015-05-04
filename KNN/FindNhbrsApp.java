@@ -34,7 +34,7 @@ public class FindNhbrsApp {
     public static DecimalFormat FORMAT_PRECISION = new DecimalFormat("0.000");
 
     /** Max number of neighbors and min num of common viewers **/
-    private static int K = 20;
+    private static int K = 23;
     private static int minCV = 16; //16
 
     /** Number of movies **/
@@ -141,7 +141,7 @@ public class FindNhbrsApp {
                     cv[movieID][i - 1] = Integer.parseInt(input2[i]);
                     sums[movieID][i - 1] = Float.parseFloat(input3[i]);
 
-                    SanityChecker.checkRatingAvg("ReadInSum", cv[movieID][i], sums[movieID][i], movieID, i);
+                    SanityChecker.checkRatingAvg("ReadInSum", cv[movieID][i - 1], sums[movieID][i - 1], movieID, i - 1);
                 }
             }
 

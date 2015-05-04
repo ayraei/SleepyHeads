@@ -9,13 +9,14 @@ import java.text.DecimalFormat;
 
 /**
  * Round off the prediction if its distance to the nearest integer is less than
- * or equal to 0.1
+ * or equal to 0.1. Doesn't seem to work...? Based on paper from: 
+ * http://cs229.stanford.edu/proj2008/Wen-RecommendationSystemBasedOnCollaborativeFiltering.pdf
  **/
 public class RoundOffApp {
 
 	/** Input and output files **/
 	private static String INPUT_PREDICT_LOC =
-			"/Users/debbie1/Documents/NetflixData/output/KNN_predictions_probe.dta";
+			"/Users/debbie1/Documents/NetflixData/output/KNN_predictions_probe2.dta";
 	private static String OUTPUT_PREDICT_LOC =
 			"/Users/debbie1/Documents/NetflixData/output/KNN_predictions_probe_rounded.dta";
 
@@ -23,7 +24,7 @@ public class RoundOffApp {
 	public static DecimalFormat FORMAT_PRECISION = new DecimalFormat("0.000");
 
 	/** Round off **/
-	private static float ro = (float) 0.1;
+	private static float ro = (float) 0.05;
 
 	/** Program entry point **/
 	public static void main(String[] args) {
@@ -75,7 +76,7 @@ public class RoundOffApp {
 				float nearestFloat = (float) Math.round(prediction);
 
 				// Apply rounding
-				if (Math.abs(nearestFloat - prediction) < ro) {
+				if (Math.abs(nearestFloat - prediction) <= ro) {
 					prediction = nearestFloat;
 				}
 
