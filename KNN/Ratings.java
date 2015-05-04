@@ -1,25 +1,24 @@
+import java.util.Arrays;
 
-/**
- * Store rating information for finding intersection of set of users between
- * two movies.
- **/
 public class Ratings {
     private final static int SIZE = 5;
 
     private int[][] intRates = new int[SIZE][SIZE];
+
     private int counter = 0;
     private float simularity;
-    
-    /** Increment the count at the specified location **/
+
     public void rate(int i, int j) {
         ++counter;
         intRates[i - 1][j - 1]++;
     }
 
-    /** Sum of all the ratings for movie X **/
+    public int get(int i, int j) {
+        return intRates[i][j];
+    }
+
     public int findSumX() {
         int sum = 0;
-        
         for (int i = 0; i < SIZE; ++i) {
             int count = 0;
             for (int j = 0; j < SIZE; ++j) {
@@ -30,10 +29,8 @@ public class Ratings {
         return sum;
     }
 
-    /** Sum of all the ratings for movie Y **/
     public int findSumY() {
         int sum = 0;
-        
         for (int i = 0; i < SIZE; ++i) {
             int count = 0;
             for (int j = 0; j < SIZE; ++j) {
@@ -44,10 +41,8 @@ public class Ratings {
         return sum;
     }
 
-    /** Sum of the products for the ratings movie X and Y **/
     public int findXY() {
         int sum = 0;
-        
         for (int i = 0; i < SIZE; ++i) {
             for (int j = 0; j < SIZE; ++j) {
                 sum += (i + 1) * (j + 1) * intRates[i][j];
@@ -56,13 +51,10 @@ public class Ratings {
         return sum;
     }
 
-    /** Sum of the squared of the ratings for movie X **/
     public int findXX() {
         int sum = 0;
-        
         for (int i = 0; i < SIZE; ++i) {
             int count = 0;
-            
             for (int j = 0; j < SIZE; ++j) {
                 count += intRates[i][j];
             }
@@ -71,13 +63,10 @@ public class Ratings {
         return sum;
     }
 
-    /** Sum of the squared of the ratings for movie Y **/
     public int findYY() {
         int sum = 0;
-        
         for (int i = 0; i < SIZE; ++i) {
             int count = 0;
-            
             for (int j = 0; j < SIZE; ++j) {
                 count += intRates[j][i];
             }
@@ -96,5 +85,14 @@ public class Ratings {
 
     public void setSimularity(float simularity) {
         this.simularity = simularity;
+    }
+
+    @Override
+    public String toString() {
+        return "Ratings{" +
+                "intRates=" + (intRates == null ? null : Arrays.asList(intRates)) +
+                ", counter=" + counter +
+                ", simularity=" + simularity +
+                '}';
     }
 }
