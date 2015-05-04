@@ -136,10 +136,10 @@ public class FindNhbrsApp {
                 String[] input3 = lineSums.split("\\s+");
                 int movieID = Integer.parseInt(input[0]) - 1;
 
-                for (int i = 0; i < NUM_MOVIES; i++) {
-                    sims[movieID][i] = Float.parseFloat(input[i]);
-                    cv[movieID][i] = Integer.parseInt(input2[i]);
-                    sums[movieID][i] = Float.parseFloat(input3[i]);
+                for (int i = 1; i <= NUM_MOVIES; i++) {
+                    sims[movieID][i - 1] = Float.parseFloat(input[i]);
+                    cv[movieID][i - 1] = Integer.parseInt(input2[i]);
+                    sums[movieID][i - 1] = Float.parseFloat(input3[i]);
 
                     SanityChecker.checkRatingAvg("ReadInSum", cv[movieID][i], sums[movieID][i], movieID, i);
                 }
