@@ -1,5 +1,4 @@
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
 /**
@@ -9,41 +8,20 @@ import java.util.HashMap;
 public class ArrayManager {
 
 	/** Fields **/
-	private final HashMap<Integer, ArrayList<Integer>> trainMap = new HashMap<Integer, ArrayList<Integer>>();
-	private final HashMap<Integer, ArrayList<Integer>> testMap  = new HashMap<Integer, ArrayList<Integer>>();
-	private final HashMap<Integer, ArrayList<Double>> x = new HashMap<Integer, ArrayList<Double>>();
-	private final HashMap<Integer, ArrayList<Double>> y = new HashMap<Integer, ArrayList<Double>>();
-
-	/** Add a rating to the training map **/
-	public void addToTraining(Integer userID, Integer rating) {
+	private final HashMap<Integer, ArrayList<RateUnit>> map = new HashMap<Integer, ArrayList<RateUnit>>();
+	
+	/** Add a rating to the map **/
+	public void add(Integer userID, Integer movieID, Integer rating) {
 
 		// Check to make sure that rating is in the assumed range
-		if (rating >= 1 && rating <= 5) {
+		if (rating >= 0 && rating <= 5) {
 
 			// Add rating to the user's array
-			ArrayList<Integer> userHistory = trainMap.get(userID);
-			userHistory.add(rating);
+			if (map.get(userID) == null) {
+				map.put(userID, new ArrayList<RateUnit>());
+			}
 			
-			ArrayList<Integer> userHistoryTest = testMap.get(userID);
-			userHistoryTest.add(rating);
-		}
-
-		// If rating is outside of range, notify user and abort
-		else {
-			System.out.println("Inappropriate rating of " + rating + " found, aborting.");
-			System.exit(-1);
-		}
-	}
-
-	/** Add a rating to the user testing map **/
-	public void addToTesting(Integer userID, Integer rating) {
-
-		// Check to make sure that rating is unknown
-		if (rating != 0) {
-
-			// Add rating to the user's array
-			ArrayList<Integer> userHistory = testMap.get(userID);
-			userHistory.add(rating);
+			map.get(userID).add(new RateUnit(movieID, rating));
 		}
 
 		// If rating is outside of range, notify user and abort
@@ -53,36 +31,34 @@ public class ArrayManager {
 		}
 	}
 	
-	/** Initialize the x and y arrays for each userID to zeros **/
-	public void init_xy() {
-		for (Integer userID : trainMap.keySet()) {
-			int R_size = trainMap.get(userID).size();
-			int N_size = testMap.get(userID).size() + R_size;
-			ArrayList<Double> xi = new ArrayList<Double>(Collections.nCopies(R_size, 0.0));
-			ArrayList<Double> yi = new ArrayList<Double>(Collections.nCopies(N_size, 0.0));
-			x.put(userID, xi);
-			y.put(userID, yi);
+	/** Return the R array (ratings 1 through 5) for the specific user **/
+	public ArrayList<RateUnit> getUserHistory_R(Integer userID) {
+		ArrayList<RateUnit> arr = new ArrayList<RateUnit>();
+		
+		// Only care for the nonzero ratings
+		for (RateUnit ru : map.get(userID)) {
+			if (ru.getRating() != 0) {
+				arr.add(ru);
+			}
 		}
+		return arr;
 	}
 	
-	/** Return the training rating array for the specific user **/
-	public ArrayList<Integer> getUserHistory_train(Integer userID) {
-		return trainMap.get(userID);
+	/** Return the N array (ratings 0 through 5) for the specific user **/
+	public ArrayList<RateUnit> getUserHistory_N(Integer userID) {
+		return map.get(userID);
 	}
-	
-	/** Return the testing rating array for the specific user **/
-	public ArrayList<Integer> getUserHistory_test(Integer userID) {
-		return testMap.get(userID);
-	}
-	
-	/** Return the training rating array for the specific user **/
-	public ArrayList<Double> getX(Integer userID) {
-		return x.get(userID);
-	}
-	
-	/** Return the testing rating array for the specific user **/
-	public ArrayList<Double> getY(Integer userID) {
-		return y.get(userID);
+
+	/** Return the rating for a movie, user in the training set **/
+	public int getOriginalRating(ArrayList<RateUnit> userHistory , Integer movieID) {
+		
+		for (RateUnit ru : userHistory) {
+			if (ru.getID() == movieID) {
+				return ru.getRating();
+			}
+		}
+		
+		return 0;
 	}
 
 }
