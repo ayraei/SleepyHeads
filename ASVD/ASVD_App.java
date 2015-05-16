@@ -188,7 +188,7 @@ public class ASVD_App {
 					// Update x
 					for (RateUnit ru : R_list) {
 						int movie = ru.getID();
-						Matrix x_i = q.getMatrix(movie, movie, 0, maxIndex);
+						Matrix x_i = x.getMatrix(movie, movie, 0, maxIndex);
 						
 						// x_i += q_i * LEARNING_RATE * err * R * sum(r_ui) - REG_PENALTY * x_i
 						x_i.plusEquals(q_i.times(LEARNING_RATE * (err * R_count * R_sum)).minus(x_i.times(REG_PENALTY)));
@@ -198,12 +198,12 @@ public class ASVD_App {
 					// Update y
 					for (RateUnit ru : N_list) {
 						int movie = ru.getID();
-						Matrix y_i = q.getMatrix(movie, movie, 0, maxIndex);
+						Matrix y_i = y.getMatrix(movie, movie, 0, maxIndex);
 						
 						// y_i += q_i * LEARNING_RATE * err * N - REG_PENALTY * y_i
 						y_i.plusEquals(q_i.times(LEARNING_RATE * (err * N_count)).minus(y_i.times(REG_PENALTY)));
 						y.setMatrix(movie, movie, 0, maxIndex, y_i);
-					}	
+					}
 
 					/*
 					for (int f = 0; f < NUM_FEATURES; f++) {
