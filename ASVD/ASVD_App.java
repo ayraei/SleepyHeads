@@ -13,6 +13,8 @@ import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import Jama.Matrix;
+
 /**
  * Makes predictions using Asymmetric SVD algorithm.
  **/
@@ -37,11 +39,11 @@ public class ASVD_App {
 
 	/** Movie feature array **/
 	public static int NUM_USERS = 458293;
-	public static int NUM_FEATURES = 1;
+	public static int NUM_FEATURES = 20;
 	public static int NUM_MOVIES = 17770;
-	public static double[][] q = new double[NUM_MOVIES][NUM_FEATURES];
-	public static double[] x = new double[NUM_MOVIES];
-	public static double[] y = new double[NUM_MOVIES];
+	public static Matrix q = new Matrix(NUM_MOVIES, NUM_FEATURES);    // auto initializes to zero
+	public static Matrix x = new Matrix(NUM_MOVIES, NUM_FEATURES);
+	public static Matrix y = new Matrix(NUM_MOVIES, NUM_FEATURES);
 
 	/** Multi-threading objects **/
 	private final static int QUEUE_CAPACITY = 400;
@@ -84,7 +86,7 @@ public class ASVD_App {
 				int userID = Integer.parseInt(input[0]) - 1;
 				int movieID = Integer.parseInt(input[1]) - 1;
 				int rating = Integer.parseInt(input[3]);
-				
+
 				// Add to hashmap
 				arrayManager.add(userID, movieID, rating);
 			}
@@ -118,15 +120,11 @@ public class ASVD_App {
 			e.printStackTrace();
 		}
 
-		// Initialize x and y arrays to all zeros
-		Arrays.fill(x, 0.0);
-		Arrays.fill(y, 0.0);
-
-		// Initialize q array to -0.001 to 0.001
+		// Initialize q matrix to -0.001 to 0.001
 		Random r = new Random();
 		for (int i = 0; i < NUM_MOVIES; i++) {
 			for (int j = 0; j < NUM_FEATURES; j++) {
-				q[i][j] = -0.001 + 0.002 * r.nextDouble();	
+				q.getArray()[i][j] = -0.001 + 0.002 * r.nextDouble();	
 			}
 		}
 
@@ -178,10 +176,37 @@ public class ASVD_App {
 					int R_sum = getSum_R(R_list);
 					int N_sum = getSum_R(N_list);
 
-					double err = rating - predictedRating(arrayManager, userID);
+					double err = rating - predictedRating(arrayManager, userID, movieID);
 
+					// Update q
+					int maxIndex = NUM_FEATURES - 1;
+					Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
+					Matrix c = new Matrix(1, NUM_FEATURES, LEARNING_RATE * (err * (R_count * R_sum + N_count * N_sum)));
+					q_i.plusEquals(c.minus(q_i.times(REG_PENALTY)));
+					q.setMatrix(movieID, movieID, 0, maxIndex, q_i);
+
+					// Update x
+					for (RateUnit ru : R_list) {
+						int movie = ru.getID();
+						Matrix x_i = q.getMatrix(movie, movie, 0, maxIndex);
+						
+						// x_i += q_i * LEARNING_RATE * err * R * sum(r_ui) - REG_PENALTY * x_i
+						x_i.plusEquals(q_i.times(LEARNING_RATE * (err * R_count * R_sum)).minus(x_i.times(REG_PENALTY)));
+						x.setMatrix(movie, movie, 0, maxIndex, x_i);
+					}
+
+					// Update y
+					for (RateUnit ru : N_list) {
+						int movie = ru.getID();
+						Matrix y_i = q.getMatrix(movie, movie, 0, maxIndex);
+						
+						// y_i += q_i * LEARNING_RATE * err * N - REG_PENALTY * y_i
+						y_i.plusEquals(q_i.times(LEARNING_RATE * (err * N_count)).minus(y_i.times(REG_PENALTY)));
+						y.setMatrix(movie, movie, 0, maxIndex, y_i);
+					}	
+
+					/*
 					for (int f = 0; f < NUM_FEATURES; f++) {
-
 						// Update q
 						q[movieID][f] += LEARNING_RATE * (err * (R_count * R_sum + N_count * N_sum) - REG_PENALTY * q[movieID][f]);
 
@@ -194,7 +219,8 @@ public class ASVD_App {
 						for (RateUnit ru : N_list) {
 							y[ru.getID()] += LEARNING_RATE * (err * N_count - REG_PENALTY * y[ru.getID()]);
 						}
-					}
+					} 
+					 */	
 				}
 			} catch (IOException e1) {
 				e1.printStackTrace();
@@ -244,8 +270,9 @@ public class ASVD_App {
 				// Read in data as a string array, cast to Integers
 				String[] input = lineTesting.split("\\s+");
 				Integer userID = Integer.parseInt(input[0]) - 1;
+				Integer movieID = Integer.parseInt(input[1]) - 1;
 
-				double prediction = predictedRating(arrayManager, userID);
+				double prediction = predictedRating(arrayManager, userID, movieID);
 				out.println(FORMAT_PRECISION.format(prediction));
 				out.flush();
 			}
@@ -260,27 +287,43 @@ public class ASVD_App {
 
 
 	/** Return the predicted rating **/
-	private static double predictedRating(ArrayManager arrayManager, Integer userID) {
-		double sum = 0;
+	private static double predictedRating(ArrayManager arrayManager, Integer userID, Integer movieID) {
 
 		ArrayList<RateUnit> userTrainRatings = arrayManager.getUserHistory_R(userID);
+		ArrayList<RateUnit> userTestRatings = arrayManager.getUserHistory_R(userID);
 
 		double R = Math.pow(userTrainRatings.size(), -0.5);
-		double N = Math.pow(arrayManager.getUserHistory_N(userID).size(), -0.5);
-		double ySum = getSum_D(y);
+		double N = Math.pow(userTestRatings.size(), -0.5);
+
+		// r hat = q[movie] * R * sum((ruj - buj) * xj) + N * sum yj
+		int max = NUM_FEATURES - 1;
+		Matrix q_i = q.getMatrix(movieID, movieID, 0, max);
+		Matrix temp = new Matrix(1, NUM_FEATURES);
+		Matrix ans = new Matrix(1, 1);
 
 		for (RateUnit ru : userTrainRatings) {
-			sum += R * arrayManager.getOriginalRating(userTrainRatings, ru.getID()) * x[ru.getID()];
+			int movie = ru.getID();
+			Matrix x_i = x.getMatrix(movie, movie, 0, max);
+
+			temp.plusEquals(x_i.times(R));
 		}
 
-		return sum * N * ySum;
+		for (RateUnit nu : userTestRatings) {
+			int movie = nu.getID();
+			Matrix y_i = y.getMatrix(movie, movie, 0, max);
+
+			temp.plusEquals(y_i.times(N));
+		}
+
+		ans = q_i.times(temp.transpose());
+		return ans.get(0, 0);
 	}
 
-	/** Return the sum of a list **/
-	public static double getSum_D(double[] arr) {
+	/** Return the sum of arrays **/
+	public static double getSum_D(double[][] arr) {
 		double sum = 0;
-		for (Double rating : arr) {
-			sum += rating;
+		for (int i = 0; i < arr.length; i++) {
+			sum += arr[0][i];
 		}
 
 		return sum;
