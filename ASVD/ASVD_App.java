@@ -82,7 +82,7 @@ public class ASVD_App {
 				// Read in data as a string array, cast to Integers
 				String[] input = lineTraining.split("\\s+");
 				int userID = Integer.parseInt(input[0]) - 1;
-				int movieID = Integer.parseInt(input[1]);
+				int movieID = Integer.parseInt(input[1]) - 1;
 				int rating = Integer.parseInt(input[3]);
 				
 				// Add to hashmap
@@ -107,7 +107,7 @@ public class ASVD_App {
 				// Read in data as a string array, cast to Integers
 				String[] input = lineTesting.split("\\s+");
 				int userID = Integer.parseInt(input[0]) - 1;
-				int movieID = Integer.parseInt(input[1]);
+				int movieID = Integer.parseInt(input[1]) - 1;
 				int rating = 0; //Integer.parseInt(input[3]);
 
 				// Add to hashmap
@@ -130,7 +130,7 @@ public class ASVD_App {
 			}
 		}
 
-		System.out.println("done initializing data");
+		System.out.println("done initializing data\n");
 	}
 
 	/** Program entry point **/
@@ -167,7 +167,7 @@ public class ASVD_App {
 					// Read in data as a string array, cast to Integers
 					String[] input = lineTraining.split("\\s+");
 					Integer userID = Integer.parseInt(input[0]) - 1;
-					Integer movieID = Integer.parseInt(input[1]);
+					Integer movieID = Integer.parseInt(input[1]) - 1;
 					Integer rating = Integer.parseInt(input[3]);
 
 					ArrayList<RateUnit> R_list = arrayManager.getUserHistory_R(userID);
@@ -254,7 +254,7 @@ public class ASVD_App {
 			e1.printStackTrace();
 		}
 
-		System.out.println("done making predictions!");
+		System.out.println("done making predictions!\n");
 		out.close();
 	}
 
