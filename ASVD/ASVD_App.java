@@ -30,7 +30,7 @@ public class ASVD_App {
 
 	/** Location of output file **/
 	private static String OUTPUT_PREDICT_LOC =
-			"/Users/debbie1/Documents/NetflixData/output/ASVD_predictions.dta";
+			"/Users/debbie1/Documents/NetflixData/output/ASVD_predictions_probe.dta";
 
 	/** Level of reported precision (3 decimal places) **/
 	public static DecimalFormat FORMAT_PRECISION = new DecimalFormat("0.000");
