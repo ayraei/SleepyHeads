@@ -26,11 +26,9 @@ public class ASVD_App {
 
 	/** Location of input files **/
 	private static String TRAIN_FILE_LOC =
-			"/Users/debbie1/Documents/NetflixData/um_training_separated/0training.dta";
-		 // "/Users/debbie1/Documents/NetflixData/mu_sorted/trainingAll.dta";
+			"/Users/debbie1/Documents/NetflixData/mu_sorted/trainingAll.dta";
 	private static String TEST_FILE_LOC =
-			"/Users/debbie1/Documents/NetflixData/um_training_separated/1training.dta";
-	     // "/Users/debbie1/Documents/NetflixData/mu_sorted/probe.dta";
+			"/Users/debbie1/Documents/NetflixData/mu_sorted/probe.dta";
 	
 	/** Location of output file **/
 	private static String OUTPUT_PREDICT_LOC =
