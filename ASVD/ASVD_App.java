@@ -175,25 +175,25 @@ public class ASVD_App {
 					double R = arrayManager.getR(userID);
 					double N = arrayManager.getN(userID);
 					
-					double x_sum = 0;
-					double y_sum = 0;
+					int maxIndex = NUM_FEATURES - 1;
+					Matrix x_sum = new Matrix(1, NUM_FEATURES);
+					Matrix y_sum = new Matrix(1, NUM_FEATURES);
 
-					int index = 0;
 					for (RateUnit ru : R_list) {
-						x_sum += ru.getRating() * x.get(ru.getID(), index);
-						index++;
+						Matrix x_i = x.getMatrix(ru.getID(), ru.getID(), 0, maxIndex);
+						x_sum.plusEquals(x_i.times(ru.getRating()));
 					}
 
 					for (RateUnit ru : N_list) {
-						y_sum += ru.getRating();
+						Matrix y_i = y.getMatrix(ru.getID(), ru.getID(), 0, maxIndex);
+						y_sum.plusEquals(y_i);
 					}
 					
 					double err = rating - predictedRating(arrayManager, userID, movieID);
 
 					// Update q
-					int maxIndex = NUM_FEATURES - 1;
 					Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
-					Matrix c = new Matrix(1, NUM_FEATURES, LEARNING_RATE * (err * (R * x_sum + N * y_sum)));
+					Matrix c = (x_sum.times(R).plus(y_sum.times(N))).times(LEARNING_RATE * err);
 					q_i.plusEquals(c.minus(q_i.times(REG_PENALTY)));
 					q.setMatrix(movieID, movieID, 0, maxIndex, q_i);
 
