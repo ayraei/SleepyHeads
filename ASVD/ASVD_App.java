@@ -22,13 +22,16 @@ public class ASVD_App {
 	/** Run parameters **/
 	public final static double LEARNING_RATE = 0.002;
 	public final static double REG_PENALTY = 0.04;
-	public final static int NUM_EPOCHS = 30;
+	public final static int NUM_EPOCHS = 1;
 
 	/** Location of input files **/
 	private static String TRAIN_FILE_LOC =
-			"/Users/debbie1/Documents/NetflixData/mu_sorted/trainingAll.dta";
+			"/Users/debbie1/Documents/NetflixData/um_training_separated/0training.dta";
+		 // "/Users/debbie1/Documents/NetflixData/mu_sorted/trainingAll.dta";
 	private static String TEST_FILE_LOC =
-			"/Users/debbie1/Documents/NetflixData/mu_sorted/probe.dta";
+			"/Users/debbie1/Documents/NetflixData/um_training_separated/1training.dta";
+	     // "/Users/debbie1/Documents/NetflixData/mu_sorted/probe.dta";
+	
 	/** Location of output file **/
 	private static String OUTPUT_PREDICT_LOC =
 			"/Users/debbie1/Documents/NetflixData/output/ASVD_predictions_probe.dta";
