@@ -41,7 +41,7 @@ public class ASVD_App {
 
 	/** Movie feature array **/
 	public static int NUM_USERS = 458293;
-	public static int NUM_FEATURES = 1;
+	public static int NUM_FEATURES = 20;
 	public static int NUM_MOVIES = 17770;
 	public static Matrix q = new Matrix(NUM_MOVIES, NUM_FEATURES);    // auto initializes to zero
 	public static Matrix x = new Matrix(NUM_MOVIES, NUM_FEATURES);
@@ -329,6 +329,10 @@ public class ASVD_App {
 		temp2.times(N);
 		
 		Matrix ans = q_i.times((temp1.plus(temp2)).transpose());
+		
+		if (ans.get(0, 0) != ans.get(0, 0)) {
+			System.out.println("here");
+		}
 		return ans.get(0, 0);
 	}
 
