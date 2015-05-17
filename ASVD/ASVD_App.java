@@ -167,7 +167,6 @@ public class ASVD_App {
 
 			try {
 				brTraining = new BufferedReader(new FileReader(TRAIN_FILE_LOC));
-
 			} catch (FileNotFoundException e1) {
 				e1.printStackTrace();
 			}
@@ -203,7 +202,7 @@ public class ASVD_App {
 					}
 
 					double err = rating - predictedRating(arrayManager, userID, movieID);
-					outperf.println(userID + " " + movieID + " " + err);
+					outperf.println(userID + " " + movieID + " " + rating + " " + err);
 
 					// Update q
 					Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
@@ -301,11 +300,13 @@ public class ASVD_App {
 
 		ArrayList<RateUnit> userTrainRatings = arrayManager.getUserHistory_R(userID);
 		ArrayList<RateUnit> userTestRatings = arrayManager.getUserHistory_N(userID);
+		
+		assert(userTrainRatings.size() > 0);
+		
+		double R = arrayManager.getR(userID);
+		double N = arrayManager.getN(userID);
 
-		double R = Math.pow(userTrainRatings.size(), -0.5);
-		double N = Math.pow(userTestRatings.size(), -0.5);
-
-		// r hat = q[movie] * R * sum((ruj - buj) * xj) + N * sum(yj)
+		// r hat = q[movie] * (R * sum((ruj - buj) * xj) + N * sum(yj))
 		int max = NUM_FEATURES - 1;
 		Matrix q_i = q.getMatrix(movieID, movieID, 0, max);
 		Matrix temp = new Matrix(1, NUM_FEATURES);
@@ -314,16 +315,18 @@ public class ASVD_App {
 			int movie = ru.getID();
 			Matrix x_i = x.getMatrix(movie, movie, 0, max);
 
-			temp.plusEquals(x_i.times(R));
+			temp.plusEquals(x_i.times(ru.getRating()));
 		}
-
+		temp.times(R);
+		
 		for (RateUnit nu : userTestRatings) {
 			int movie = nu.getID();
 			Matrix y_i = y.getMatrix(movie, movie, 0, max);
 
-			temp.plusEquals(y_i.times(N));
+			temp.plusEquals(y_i);
 		}
-
+		temp.times(N);
+		
 		Matrix ans = q_i.times(temp.transpose());
 		return ans.get(0, 0);
 	}
