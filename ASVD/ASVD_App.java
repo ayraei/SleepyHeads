@@ -309,25 +309,26 @@ public class ASVD_App {
 		// r hat = q[movie] * (R * sum((ruj - buj) * xj) + N * sum(yj))
 		int max = NUM_FEATURES - 1;
 		Matrix q_i = q.getMatrix(movieID, movieID, 0, max);
-		Matrix temp = new Matrix(1, NUM_FEATURES);
+		Matrix temp1 = new Matrix(1, NUM_FEATURES);
+		Matrix temp2 = new Matrix(1, NUM_FEATURES);
 
 		for (RateUnit ru : userTrainRatings) {
 			int movie = ru.getID();
 			Matrix x_i = x.getMatrix(movie, movie, 0, max);
 
-			temp.plusEquals(x_i.times(ru.getRating()));
+			temp1.plusEquals(x_i.times(ru.getRating()));
 		}
-		temp.times(R);
+		temp1.times(R);
 		
 		for (RateUnit nu : userTestRatings) {
 			int movie = nu.getID();
 			Matrix y_i = y.getMatrix(movie, movie, 0, max);
 
-			temp.plusEquals(y_i);
+			temp2.plusEquals(y_i);
 		}
-		temp.times(N);
+		temp2.times(N);
 		
-		Matrix ans = q_i.times(temp.transpose());
+		Matrix ans = q_i.times((temp1.plus(temp2)).transpose());
 		return ans.get(0, 0);
 	}
 
