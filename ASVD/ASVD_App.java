@@ -22,24 +22,26 @@ public class ASVD_App {
 	/** Run parameters **/
 	public final static double LEARNING_RATE = 0.002;
 	public final static double REG_PENALTY = 0.04;
-	public final static int NUM_EPOCHS = 1;
+	public final static int NUM_EPOCHS = 2;
 
 	/** Location of input files **/
 	private static String TRAIN_FILE_LOC =
 			"/Users/debbie1/Documents/NetflixData/mu_sorted/trainingAll.dta";
 	private static String TEST_FILE_LOC =
 			"/Users/debbie1/Documents/NetflixData/mu_sorted/probe.dta";
-	
+
 	/** Location of output file **/
 	private static String OUTPUT_PREDICT_LOC =
 			"/Users/debbie1/Documents/NetflixData/output/ASVD_predictions_probe.dta";
+	private static String OUTPUT_PERF_LOC =
+			"/Users/debbie1/Documents/NetflixData/output/performance.dta";
 
 	/** Level of reported precision (3 decimal places) **/
 	public static DecimalFormat FORMAT_PRECISION = new DecimalFormat("0.000");
 
 	/** Movie feature array **/
 	public static int NUM_USERS = 458293;
-	public static int NUM_FEATURES = 20;
+	public static int NUM_FEATURES = 1;
 	public static int NUM_MOVIES = 17770;
 	public static Matrix q = new Matrix(NUM_MOVIES, NUM_FEATURES);    // auto initializes to zero
 	public static Matrix x = new Matrix(NUM_MOVIES, NUM_FEATURES);
@@ -119,7 +121,7 @@ public class ASVD_App {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
+
 		// Initialize constant matrices
 		arrayManager.initConstants();
 
@@ -141,6 +143,16 @@ public class ASVD_App {
 		ArrayManager arrayManager = new ArrayManager();
 		init(arrayManager);
 
+		// Prepare to print out performance
+		PrintWriter outperf = null;
+		try {
+			outperf = new PrintWriter(new FileOutputStream(OUTPUT_PERF_LOC, true));
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			System.exit(-1);
+		}
+
 		// Create buffered reader for getting reading in data
 		String lineTraining;
 		BufferedReader brTraining = null;
@@ -152,14 +164,14 @@ public class ASVD_App {
 			if (e % 10 == 0) {
 				System.out.println(e);
 			}
-			
+
 			try {
 				brTraining = new BufferedReader(new FileReader(TRAIN_FILE_LOC));
 
 			} catch (FileNotFoundException e1) {
 				e1.printStackTrace();
 			}
-			
+
 			// Read in training data to memory
 			try {
 				while ((lineTraining = brTraining.readLine()) != null) {
@@ -175,7 +187,7 @@ public class ASVD_App {
 
 					double R = arrayManager.getR(userID);
 					double N = arrayManager.getN(userID);
-					
+
 					int maxIndex = NUM_FEATURES - 1;
 					Matrix x_sum = new Matrix(1, NUM_FEATURES);
 					Matrix y_sum = new Matrix(1, NUM_FEATURES);
@@ -189,8 +201,9 @@ public class ASVD_App {
 						Matrix y_i = y.getMatrix(ru.getID(), ru.getID(), 0, maxIndex);
 						y_sum.plusEquals(y_i);
 					}
-					
+
 					double err = rating - predictedRating(arrayManager, userID, movieID);
+					outperf.println(userID + " " + movieID + " " + err);
 
 					// Update q
 					Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
@@ -202,7 +215,7 @@ public class ASVD_App {
 					for (RateUnit ru : R_list) {
 						int movie = ru.getID();
 						Matrix x_i = x.getMatrix(movie, movie, 0, maxIndex);
-						
+
 						// x_i += q_i * LEARNING_RATE * err * R * sum(r_ui) - REG_PENALTY * x_i
 						x_i.plusEquals(q_i.times(LEARNING_RATE * (err * R * arrayManager.getRSum(userID))).minus(x_i.times(REG_PENALTY)));
 						x.setMatrix(movie, movie, 0, maxIndex, x_i);
@@ -212,28 +225,11 @@ public class ASVD_App {
 					for (RateUnit ru : N_list) {
 						int movie = ru.getID();
 						Matrix y_i = y.getMatrix(movie, movie, 0, maxIndex);
-						
+
 						// y_i += q_i * LEARNING_RATE * err * N - REG_PENALTY * y_i
 						y_i.plusEquals(q_i.times(LEARNING_RATE * (err * N)).minus(y_i.times(REG_PENALTY)));
 						y.setMatrix(movie, movie, 0, maxIndex, y_i);
 					}
-
-					/*
-					for (int f = 0; f < NUM_FEATURES; f++) {
-						// Update q
-						q[movieID][f] += LEARNING_RATE * (err * (R_count * R_sum + N_count * N_sum) - REG_PENALTY * q[movieID][f]);
-
-						// Update for each item
-						for (RateUnit ru : R_list) {
-							x[ru.getID()] += LEARNING_RATE * (err * R_count - REG_PENALTY * x[ru.getID()]);
-						}
-
-						// Update y
-						for (RateUnit ru : N_list) {
-							y[ru.getID()] += LEARNING_RATE * (err * N_count - REG_PENALTY * y[ru.getID()]);
-						}
-					} 
-					 */	
 				}
 			} catch (IOException e1) {
 				e1.printStackTrace();
@@ -296,6 +292,7 @@ public class ASVD_App {
 
 		System.out.println("done making predictions!\n");
 		out.close();
+		outperf.close();
 	}
 
 
