@@ -29,7 +29,6 @@ public class ASVD_App {
 			"/Users/debbie1/Documents/NetflixData/mu_sorted/trainingAll.dta";
 	private static String TEST_FILE_LOC =
 			"/Users/debbie1/Documents/NetflixData/mu_sorted/probe.dta";
-
 	/** Location of output file **/
 	private static String OUTPUT_PREDICT_LOC =
 			"/Users/debbie1/Documents/NetflixData/output/ASVD_predictions_probe.dta";
@@ -119,6 +118,9 @@ public class ASVD_App {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		// Initialize constant matrices
+		arrayManager.initConstants();
 
 		// Initialize q matrix to -0.001 to 0.001
 		Random r = new Random();
@@ -141,26 +143,25 @@ public class ASVD_App {
 		// Create buffered reader for getting reading in data
 		String lineTraining;
 		BufferedReader brTraining = null;
-		try {
-			brTraining = new BufferedReader(new FileReader(TRAIN_FILE_LOC));
-
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
 
 		// Run ASVD via stochastic gradient descent TODO: PARALLIZE UPDATES
 		for (int e = 0; e < NUM_EPOCHS; e++) {
 
+			// Print progress
+			if (e % 10 == 0) {
+				System.out.println(e);
+			}
+			
+			try {
+				brTraining = new BufferedReader(new FileReader(TRAIN_FILE_LOC));
+
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			}
+			
 			// Read in training data to memory
-			int count = 0;
 			try {
 				while ((lineTraining = brTraining.readLine()) != null) {
-
-					// Print progress
-					if (count % 10000000 == 0) {
-						System.out.println(count);
-					}
-					count++;
 
 					// Read in data as a string array, cast to Integers
 					String[] input = lineTraining.split("\\s+");
@@ -171,17 +172,28 @@ public class ASVD_App {
 					ArrayList<RateUnit> R_list = arrayManager.getUserHistory_R(userID);
 					ArrayList<RateUnit> N_list = arrayManager.getUserHistory_N(userID);
 
-					double R_count = Math.pow(R_list.size(), -0.5);
-					double N_count = Math.pow(N_list.size(), -0.5);
-					int R_sum = getSum_R(R_list);
-					int N_sum = getSum_R(N_list);
+					double R = arrayManager.getR(userID);
+					double N = arrayManager.getN(userID);
+					
+					double x_sum = 0;
+					double y_sum = 0;
 
+					int index = 0;
+					for (RateUnit ru : R_list) {
+						x_sum += ru.getRating() * x.get(ru.getID(), index);
+						index++;
+					}
+
+					for (RateUnit ru : N_list) {
+						y_sum += ru.getRating();
+					}
+					
 					double err = rating - predictedRating(arrayManager, userID, movieID);
 
 					// Update q
 					int maxIndex = NUM_FEATURES - 1;
 					Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
-					Matrix c = new Matrix(1, NUM_FEATURES, LEARNING_RATE * (err * (R_count * R_sum + N_count * N_sum)));
+					Matrix c = new Matrix(1, NUM_FEATURES, LEARNING_RATE * (err * (R * x_sum + N * y_sum)));
 					q_i.plusEquals(c.minus(q_i.times(REG_PENALTY)));
 					q.setMatrix(movieID, movieID, 0, maxIndex, q_i);
 
@@ -191,7 +203,7 @@ public class ASVD_App {
 						Matrix x_i = x.getMatrix(movie, movie, 0, maxIndex);
 						
 						// x_i += q_i * LEARNING_RATE * err * R * sum(r_ui) - REG_PENALTY * x_i
-						x_i.plusEquals(q_i.times(LEARNING_RATE * (err * R_count * R_sum)).minus(x_i.times(REG_PENALTY)));
+						x_i.plusEquals(q_i.times(LEARNING_RATE * (err * R * arrayManager.getRSum(userID))).minus(x_i.times(REG_PENALTY)));
 						x.setMatrix(movie, movie, 0, maxIndex, x_i);
 					}
 
@@ -201,7 +213,7 @@ public class ASVD_App {
 						Matrix y_i = y.getMatrix(movie, movie, 0, maxIndex);
 						
 						// y_i += q_i * LEARNING_RATE * err * N - REG_PENALTY * y_i
-						y_i.plusEquals(q_i.times(LEARNING_RATE * (err * N_count)).minus(y_i.times(REG_PENALTY)));
+						y_i.plusEquals(q_i.times(LEARNING_RATE * (err * N)).minus(y_i.times(REG_PENALTY)));
 						y.setMatrix(movie, movie, 0, maxIndex, y_i);
 					}
 
@@ -290,16 +302,15 @@ public class ASVD_App {
 	private static double predictedRating(ArrayManager arrayManager, Integer userID, Integer movieID) {
 
 		ArrayList<RateUnit> userTrainRatings = arrayManager.getUserHistory_R(userID);
-		ArrayList<RateUnit> userTestRatings = arrayManager.getUserHistory_R(userID);
+		ArrayList<RateUnit> userTestRatings = arrayManager.getUserHistory_N(userID);
 
 		double R = Math.pow(userTrainRatings.size(), -0.5);
 		double N = Math.pow(userTestRatings.size(), -0.5);
 
-		// r hat = q[movie] * R * sum((ruj - buj) * xj) + N * sum yj
+		// r hat = q[movie] * R * sum((ruj - buj) * xj) + N * sum(yj)
 		int max = NUM_FEATURES - 1;
 		Matrix q_i = q.getMatrix(movieID, movieID, 0, max);
 		Matrix temp = new Matrix(1, NUM_FEATURES);
-		Matrix ans = new Matrix(1, 1);
 
 		for (RateUnit ru : userTrainRatings) {
 			int movie = ru.getID();
@@ -315,7 +326,7 @@ public class ASVD_App {
 			temp.plusEquals(y_i.times(N));
 		}
 
-		ans = q_i.times(temp.transpose());
+		Matrix ans = q_i.times(temp.transpose());
 		return ans.get(0, 0);
 	}
 
