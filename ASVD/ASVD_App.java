@@ -233,7 +233,7 @@ public class ASVD_App {
 						
 						// x_i += q_i * LEARNING_RATE * err * R * sum(r_ui) - REG_PENALTY * x_i
 						for (int f = 0; f < maxIndex; f++) {
-							x.set(movie, f, x.get(movie, f) + c1.get(movie, f) - (x.get(movie, f) * REG_PENALTY));
+							x.set(movie, f, x.get(movie, f) + c1.get(0, f) - (x.get(movie, f) * REG_PENALTY));
 						}
 						
 						//Matrix x_i = x.getMatrix(movie, movie, 0, maxIndex);
@@ -245,11 +245,16 @@ public class ASVD_App {
 					Matrix c2 = q_i.times(lrte * N);
 					for (RateUnit ru : N_list) {
 						int movie = ru.getID();
-						Matrix y_i = y.getMatrix(movie, movie, 0, maxIndex);
-
+						
+						// x_i += q_i * LEARNING_RATE * err * R * sum(r_ui) - REG_PENALTY * x_i
+						for (int f = 0; f < maxIndex; f++) {
+							y.set(movie, f, y.get(movie, f) + c2.get(0, f) - (y.get(movie, f) * REG_PENALTY));
+						}
+						
 						// y_i += q_i * LEARNING_RATE * err * N - REG_PENALTY * y_i
-						y_i.plusEquals(c2.minus(y_i.times(REG_PENALTY)));
-						y.setMatrix(movie, movie, 0, maxIndex, y_i);
+						//Matrix y_i = y.getMatrix(movie, movie, 0, maxIndex);
+						//y_i.plusEquals(c2.minus(y_i.times(REG_PENALTY)));
+						//y.setMatrix(movie, movie, 0, maxIndex, y_i);
 					}
 				}
 			} catch (IOException e1) {
