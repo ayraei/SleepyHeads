@@ -197,26 +197,30 @@ public class ASVD_App {
 						Matrix x_i = x.getMatrix(ru.getID(), ru.getID(), 0, maxIndex);
 						x_sum.plusEquals(x_i.times(ru.getRating()));
 					}
-
+					x_sum.timesEquals(R);					
+					
 					for (RateUnit ru : N_list) {
 						Matrix y_i = y.getMatrix(ru.getID(), ru.getID(), 0, maxIndex);
 						y_sum.plusEquals(y_i);
 					}
+					y_sum.timesEquals(N);
 					
 					Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
-					double predictedRating = q_i.times((x_sum.times(R).plus(y_sum.times(N))).transpose()).get(0,0);;
+					double predictedRating = q_i.times(x_sum.plus(y_sum).transpose()).get(0,0);;
 					double err = rating - predictedRating;
-					if (userID % 100 == 0) {
+					if (movieID % 100 == 0) {
 						outperf.println(userID + " " + movieID + " " + rating + " " + err);
+						outperf.flush();
 					}
 
 					// Update q
-					Matrix c = (x_sum.times(R).plus(y_sum.times(N))).times(LEARNING_RATE * err);
+					double lrte = LEARNING_RATE * err;
+					Matrix c = (x_sum.plus(y_sum)).times(lrte);
 					q_i.plusEquals(c.minus(q_i.times(REG_PENALTY)));
 					q.setMatrix(movieID, movieID, 0, maxIndex, q_i);
 
 					// Update x
-					Matrix c1 = q_i.times(LEARNING_RATE * (err * R * arrayManager.getRSum(userID)));
+					Matrix c1 = q_i.times(lrte * R * arrayManager.getRSum(userID));
 					for (RateUnit ru : R_list) {
 						int movie = ru.getID();
 						Matrix x_i = x.getMatrix(movie, movie, 0, maxIndex);
@@ -227,7 +231,7 @@ public class ASVD_App {
 					}
 
 					// Update y
-					Matrix c2 = q_i.times(LEARNING_RATE * (err * N));
+					Matrix c2 = q_i.times(lrte * N);
 					for (RateUnit ru : N_list) {
 						int movie = ru.getID();
 						Matrix y_i = y.getMatrix(movie, movie, 0, maxIndex);
