@@ -233,9 +233,7 @@ public class ASVD_App {
 						
 						// x_i += q_i * LEARNING_RATE * err * R * sum(r_ui) - REG_PENALTY * x_i
 						for (int f = 0; f < maxIndex; f++) {
-							x.setMatrix(movie, movie, 0, f, x.getMatrix(movie, movie, 0, f).plusEquals( 
-									c1.getMatrix(movie, movie, 0, f).minus(
-									x.getMatrix(movie, movie, 0, f).times(REG_PENALTY))));
+							x.set(movie, f, x.get(movie, f) + c1.get(movie, f) - (x.get(movie, f) * REG_PENALTY));
 						}
 						
 						//Matrix x_i = x.getMatrix(movie, movie, 0, maxIndex);
