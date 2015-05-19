@@ -156,7 +156,6 @@ public class ASVD_App {
 		}
 		
 		int maxIndex = NUM_FEATURES - 1;
-		statistics.setTotalCount(98291669);
 		
 		// Create buffered reader for getting reading in data
 		String lineTraining;
@@ -176,6 +175,8 @@ public class ASVD_App {
 				e1.printStackTrace();
 			}
 
+			statistics.setTotalCount(98291669);
+			
 			// Read in training data to memory
 			try {
 				while ((lineTraining = brTraining.readLine()) != null) {
@@ -198,7 +199,7 @@ public class ASVD_App {
 
 					for (RateUnit ru : R_list) {
 						Matrix x_i = x.getMatrix(ru.getID(), ru.getID(), 0, maxIndex);
-						x_sum.plusEquals(x_i.times(ru.getRating()));
+						x_sum.plusEquals(x_i.timesEquals(ru.getRating()));
 					}
 					x_sum.timesEquals(R);					
 					
@@ -214,7 +215,7 @@ public class ASVD_App {
 					double err = rating - predictedRating;
 					
 					if (movieID % 100 == 0) {
-						System.out.println(statistics.toString());
+						//System.out.println(statistics.toString());
 						outperf.println(userID + " " + movieID + " " + rating + " " + err);
 						outperf.flush();
 					}
@@ -229,11 +230,17 @@ public class ASVD_App {
 					Matrix c1 = q_i.times(lrte * R * arrayManager.getRSum(userID));
 					for (RateUnit ru : R_list) {
 						int movie = ru.getID();
-						Matrix x_i = x.getMatrix(movie, movie, 0, maxIndex);
-
+						
 						// x_i += q_i * LEARNING_RATE * err * R * sum(r_ui) - REG_PENALTY * x_i
-						x_i.plusEquals(c1.minus(x_i.times(REG_PENALTY)));
-						x.setMatrix(movie, movie, 0, maxIndex, x_i);
+						for (int f = 0; f < maxIndex; f++) {
+							x.setMatrix(movie, movie, 0, f, x.getMatrix(movie, movie, 0, f).plusEquals( 
+									c1.getMatrix(movie, movie, 0, f).minus(
+									x.getMatrix(movie, movie, 0, f).times(REG_PENALTY))));
+						}
+						
+						//Matrix x_i = x.getMatrix(movie, movie, 0, maxIndex);
+						//x_i.plusEquals(c1.minus(x_i.times(REG_PENALTY)));
+						//x.setMatrix(movie, movie, 0, maxIndex, x_i);
 					}
 
 					// Update y
