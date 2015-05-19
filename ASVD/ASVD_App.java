@@ -154,11 +154,13 @@ public class ASVD_App {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-
+		
+		int maxIndex = NUM_FEATURES - 1;
+		statistics.setTotalCount(98291669);
+		
 		// Create buffered reader for getting reading in data
 		String lineTraining;
 		BufferedReader brTraining = null;
-		int maxIndex = NUM_FEATURES - 1;
 		
 		// Run ASVD via stochastic gradient descent TODO: PARALLIZE UPDATES
 		for (int e = 0; e < NUM_EPOCHS; e++) {
@@ -177,6 +179,7 @@ public class ASVD_App {
 			// Read in training data to memory
 			try {
 				while ((lineTraining = brTraining.readLine()) != null) {
+					statistics.incAndGet();
 
 					// Read in data as a string array, cast to Integers
 					String[] input = lineTraining.split("\\s+");
@@ -206,16 +209,19 @@ public class ASVD_App {
 					y_sum.timesEquals(N);
 					
 					Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
-					double predictedRating = q_i.times(x_sum.plus(y_sum).transpose()).get(0,0);;
+					Matrix XYsum = x_sum.plus(y_sum);
+					double predictedRating = q_i.times(XYsum.transpose()).get(0,0);;
 					double err = rating - predictedRating;
+					
 					if (movieID % 100 == 0) {
+						System.out.println(statistics.toString());
 						outperf.println(userID + " " + movieID + " " + rating + " " + err);
 						outperf.flush();
 					}
 
 					// Update q
 					double lrte = LEARNING_RATE * err;
-					Matrix c = (x_sum.plus(y_sum)).times(lrte);
+					Matrix c = XYsum.times(lrte);
 					q_i.plusEquals(c.minus(q_i.times(REG_PENALTY)));
 					q.setMatrix(movieID, movieID, 0, maxIndex, q_i);
 
