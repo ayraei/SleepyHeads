@@ -20,8 +20,8 @@ import Jama.Matrix;
  **/
 public class ASVD_App {
 	/** Run parameters **/
-	public final static double LEARNING_RATE = 0.002;
-	public final static double REG_PENALTY = 0.04;
+	public final static double LEARNING_RATE = 0.001;
+	public final static double REG_PENALTY = 0.01;
 	public final static int NUM_EPOCHS = 2;
 
 	/** Location of input files **/
