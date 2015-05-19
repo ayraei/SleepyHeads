@@ -20,7 +20,7 @@ import Jama.Matrix;
  **/
 public class ASVD_App {
 	/** Run parameters **/
-	public final static double LEARNING_RATE = 0.002;
+	public final static double LEARNING_RATE = 0.0001;
 	public final static double REG_PENALTY = 0.04;
 	public final static int NUM_EPOCHS = 2;
 
@@ -129,7 +129,9 @@ public class ASVD_App {
 		Random r = new Random();
 		for (int i = 0; i < NUM_MOVIES; i++) {
 			for (int j = 0; j < NUM_FEATURES; j++) {
-				q.getArray()[i][j] = -0.001 + 0.002 * r.nextDouble();	
+				q.getArray()[i][j] = -0.001 + 0.002 * r.nextDouble();
+				x.getArray()[i][j] = -0.001 + 0.002 * r.nextDouble();
+				y.getArray()[i][j] = -0.001 + 0.002 * r.nextDouble();
 			}
 		}
 
@@ -156,7 +158,8 @@ public class ASVD_App {
 		// Create buffered reader for getting reading in data
 		String lineTraining;
 		BufferedReader brTraining = null;
-
+		int maxIndex = NUM_FEATURES - 1;
+		
 		// Run ASVD via stochastic gradient descent TODO: PARALLIZE UPDATES
 		for (int e = 0; e < NUM_EPOCHS; e++) {
 
@@ -187,7 +190,6 @@ public class ASVD_App {
 					double R = arrayManager.getR(userID);
 					double N = arrayManager.getN(userID);
 
-					int maxIndex = NUM_FEATURES - 1;
 					Matrix x_sum = new Matrix(1, NUM_FEATURES);
 					Matrix y_sum = new Matrix(1, NUM_FEATURES);
 
@@ -200,33 +202,36 @@ public class ASVD_App {
 						Matrix y_i = y.getMatrix(ru.getID(), ru.getID(), 0, maxIndex);
 						y_sum.plusEquals(y_i);
 					}
-
-					double err = rating - predictedRating(arrayManager, userID, movieID);
+					
+					Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
+					double predictedRating = q_i.times((x_sum.times(R).plus(y_sum.times(N))).transpose()).get(0,0);;
+					double err = rating - predictedRating;
 					outperf.println(userID + " " + movieID + " " + rating + " " + err);
 
 					// Update q
-					Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
 					Matrix c = (x_sum.times(R).plus(y_sum.times(N))).times(LEARNING_RATE * err);
 					q_i.plusEquals(c.minus(q_i.times(REG_PENALTY)));
 					q.setMatrix(movieID, movieID, 0, maxIndex, q_i);
 
 					// Update x
+					double c1 = LEARNING_RATE * (err * R * arrayManager.getRSum(userID));
 					for (RateUnit ru : R_list) {
 						int movie = ru.getID();
 						Matrix x_i = x.getMatrix(movie, movie, 0, maxIndex);
 
 						// x_i += q_i * LEARNING_RATE * err * R * sum(r_ui) - REG_PENALTY * x_i
-						x_i.plusEquals(q_i.times(LEARNING_RATE * (err * R * arrayManager.getRSum(userID))).minus(x_i.times(REG_PENALTY)));
+						x_i.plusEquals(q_i.times(c1).minus(x_i.times(REG_PENALTY)));
 						x.setMatrix(movie, movie, 0, maxIndex, x_i);
 					}
 
 					// Update y
+					double c2 = LEARNING_RATE * (err * N);
 					for (RateUnit ru : N_list) {
 						int movie = ru.getID();
 						Matrix y_i = y.getMatrix(movie, movie, 0, maxIndex);
 
 						// y_i += q_i * LEARNING_RATE * err * N - REG_PENALTY * y_i
-						y_i.plusEquals(q_i.times(LEARNING_RATE * (err * N)).minus(y_i.times(REG_PENALTY)));
+						y_i.plusEquals(q_i.times(c2).minus(y_i.times(REG_PENALTY)));
 						y.setMatrix(movie, movie, 0, maxIndex, y_i);
 					}
 				}
@@ -328,11 +333,8 @@ public class ASVD_App {
 		}
 		temp2.times(N);
 		
-		Matrix ans = q_i.times((temp1.plus(temp2)).transpose());
+		Matrix ans = q_i.arrayTimes((temp1.plus(temp2)));
 		
-		if (ans.get(0, 0) != ans.get(0, 0)) {
-			System.out.println("here");
-		}
 		return ans.get(0, 0);
 	}
 
