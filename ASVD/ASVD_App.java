@@ -180,7 +180,7 @@ public class ASVD_App {
 			// Read in training data to memory
 			try {
 				while ((lineTraining = brTraining.readLine()) != null) {
-					statistics.incAndGet();
+					//statistics.incAndGet();
 
 					// Read in data as a string array, cast to Integers
 					String[] input = lineTraining.split("\\s+");
