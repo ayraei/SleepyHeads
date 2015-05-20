@@ -5,8 +5,11 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Random;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -165,7 +168,11 @@ public class SVDPP_App {
 
 		// Run ASVD via stochastic gradient descent TODO: PARALLIZE UPDATES
 		for (int e = 0; e < NUM_EPOCHS; e++) {
-
+			// Print finished
+			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+			Date date = new Date();
+			System.out.println("Epoch start at: " + dateFormat.format(date));
+			
 			// Print progress
 			System.out.println("Epoch: " + e);
 
@@ -179,11 +186,11 @@ public class SVDPP_App {
 			try {
 				while ((lineTraining = brTraining.readLine()) != null) {
 
-					// Read in data as a string array, cast to Integers
+					// Read in data as a string array, cast to ints
 					String[] input = lineTraining.split("\\s+");
-					Integer userID = Integer.parseInt(input[0]) - 1;
-					Integer movieID = Integer.parseInt(input[1]) - 1;
-					Integer rating = Integer.parseInt(input[3]);
+					int userID = Integer.parseInt(input[0]) - 1;
+					int movieID = Integer.parseInt(input[1]) - 1;
+					int rating = Integer.parseInt(input[3]);
 
 					// Set up
 					double N = arrayManager.getN(userID);
@@ -191,7 +198,8 @@ public class SVDPP_App {
 					Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
 					Matrix p_u = p.getMatrix(userID, userID, 0, maxIndex);
 					Matrix y_sum = new Matrix(1, NUM_FEATURES);					
-// Calculate y_sum (sum of all the ratings from a user)
+
+					// Calculate y_sum (sum of all the ratings from a user)
 					for (RateUnit ru : N_list) {
 						int movie = ru.getID();
 
@@ -202,24 +210,35 @@ public class SVDPP_App {
 					y_sum.timesEquals(N);
 
 					// Calculate error
-					double predictedRating = q_i.times((y_sum.plusEquals(p_u)).transpose()).get(0, 0);
+					//double predictedRating = q_i.times((y_sum.plusEquals(p_u)).transpose()).get(0, 0);
+					double predictedRating = 0;
+					for (int f = 0; f < maxIndex; f++) {
+						predictedRating += q_i.get(0, f) * (y_sum.get(0, f) + p_u.get(0, f));
+					}
+
 					double err = rating - predictedRating;
+					double LRtE  = LEARNING_RATE * err;
+
 					if (movieID % 100 == 0) {
 						outperf.println(userID + " " + movieID + " " + rating + " " + err);
 						outperf.flush();
 					}
 
-					double LRtE  = LEARNING_RATE * err;
-
 					// Update q
 					// q_i = q_i + LEARNING_RATE * err * (p_u + y_sum) - LEARNING_RATE * REG_PENALTY * q_i
-					Matrix q_inew = q_i.plus(y_sum.timesEquals(LRtE).minusEquals(q_i.times(LRtRP)));
-					q.setMatrix(movieID, movieID, 0, maxIndex, q_inew);
+					//Matrix q_inew = q_i.plus(y_sum.timesEquals(LRtE).minusEquals(q_i.times(LRtRP)));
+					//q.setMatrix(movieID, movieID, 0, maxIndex, q_inew);
+					for (int f = 0; f < maxIndex; f++) {
+						q.set(movieID, f, q_i.get(0, f) + y_sum.get(0, f) * LRtE - q_i.get(0,  f) * LRtRP);
+					}
 
 					// Update p
 					// p_u = p_u + LEARNING_RATE * err * q_i - LEARNING_RATE * REG_PENALTY * p_u
-					p_u.plusEquals(q_i.timesEquals(LRtE).minus(p_u.times(LRtRP)));
-					p.setMatrix(userID, userID, 0, maxIndex, p_u);
+					//p_u.plusEquals(q_i.timesEquals(LRtE).minus(p_u.times(LRtRP)));
+					//p.setMatrix(userID, userID, 0, maxIndex, p_u);
+					for (int f = 0; f < maxIndex; f++) {
+						p.set(userID, f, p_u.get(0, f) + q_i.get(0, f) * LRtE - p_u.get(0,  f) * LRtRP);
+					}
 
 					// Update y
 					// y_j = y_j + q_i * LEARNING_RATE * err * N - LEARNING_RATE * REG_PENALTY * y_j
@@ -228,10 +247,17 @@ public class SVDPP_App {
 						int movie = ru.getID();
 
 						for (int f = 0; f < maxIndex; f++) {
-							y.set(movie, f, y.get(movie, f) + q_i.get(0, f) - (LRtRP * y.get(movie, f)));
+							y.set(movie, f, 
+									y.get(movie, f) + q_i.get(0, f) - (LRtRP * y.get(movie, f)));
 						}
 					}
 				}
+
+				// Print finished
+				dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+				date = new Date();
+				System.out.println("Epoch complete at: " + dateFormat.format(date));
+				
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
@@ -301,23 +327,30 @@ public class SVDPP_App {
 	/** Return the predicted rating **/
 	private static double predictedRating(ArrayManager arrayManager, Integer userID, Integer movieID) {
 
-		ArrayList<RateUnit> userTestRatings = arrayManager.getUserHistory_N(userID);
+		int maxIndex = NUM_FEATURES - 1;
 		double N = arrayManager.getN(userID);
-
-		// r hat = q[movie] * (pu + N * sum(yj))
-		int max = NUM_FEATURES - 1;
-		Matrix q_i = q.getMatrix(movieID, movieID, 0, max);
+		ArrayList<RateUnit> userTestRatings = arrayManager.getUserHistory_N(userID);
+		Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
+		Matrix p_u = p.getMatrix(userID, userID, 0, maxIndex);
 		Matrix y_sum = new Matrix(1, NUM_FEATURES);
 
-		for (RateUnit nu : userTestRatings) {
-			int movie = nu.getID();
-			y_sum.plusEquals(y.getMatrix(movie, movie, 0, max));
+		// Calculate y_sum (userTestRatings of all the ratings from a user)
+		for (RateUnit ru : userTestRatings) {
+			int movie = ru.getID();
+
+			for (int f = 0; f < maxIndex; f++) {
+				y_sum.set(0, f, y_sum.get(0, f) + y.get(movie, f));
+			}
 		}
-		y_sum.times(N);
+		y_sum.timesEquals(N);
 
-		Matrix ans = q_i.arrayTimes((p.getMatrix(userID, userID, 0, max).plus(y_sum)).transpose());
+		// r hat = q[movie] * (pu + N * sum(yj))
+		double predictedRating = 0;
+		for (int f = 0; f < maxIndex; f++) {
+			predictedRating += q_i.get(0, f) * y_sum.get(0, f) + p_u.get(0, f);
+		}
 
-		return ans.get(0, 0);
+		return predictedRating;
 	}
 
 }
