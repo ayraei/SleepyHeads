@@ -161,20 +161,19 @@ public class SVDPP_App {
 		// Constants
 		int maxIndex = NUM_FEATURES - 1;
 		double LRtRP = LEARNING_RATE * REG_PENALTY;
-
+		DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
+		
 		// Create buffered reader for getting reading in data
 		String lineTraining;
 		BufferedReader brTraining = null;
 
 		// Run ASVD via stochastic gradient descent TODO: PARALLIZE UPDATES
 		for (int e = 0; e < NUM_EPOCHS; e++) {
-			// Print finished
-			DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-			Date date = new Date();
-			System.out.println("Epoch start at: " + dateFormat.format(date));
-			
 			// Print progress
 			System.out.println("Epoch: " + e);
+
+			// Print start
+			System.out.println("Epoch start at: " + dateFormat.format(new Date()));
 
 			try {
 				brTraining = new BufferedReader(new FileReader(TRAIN_FILE_LOC));
@@ -226,38 +225,35 @@ public class SVDPP_App {
 
 					// Update q
 					// q_i = q_i + LEARNING_RATE * err * (p_u + y_sum) - LEARNING_RATE * REG_PENALTY * q_i
-					//Matrix q_inew = q_i.plus(y_sum.timesEquals(LRtE).minusEquals(q_i.times(LRtRP)));
-					//q.setMatrix(movieID, movieID, 0, maxIndex, q_inew);
+					// Matrix q_inew = q_i.plus(y_sum.timesEquals(LRtE).minusEquals(q_i.times(LRtRP)));
+					// q.setMatrix(movieID, movieID, 0, maxIndex, q_inew);
 					for (int f = 0; f < maxIndex; f++) {
-						q.set(movieID, f, q_i.get(0, f) + y_sum.get(0, f) * LRtE - q_i.get(0,  f) * LRtRP);
+						q.set(movieID, f, q_i.get(0, f) + LRtE * (y_sum.get(0, f) + p_u.get(0,f)) - LRtRP * q_i.get(0,  f));
 					}
 
 					// Update p
 					// p_u = p_u + LEARNING_RATE * err * q_i - LEARNING_RATE * REG_PENALTY * p_u
-					//p_u.plusEquals(q_i.timesEquals(LRtE).minus(p_u.times(LRtRP)));
-					//p.setMatrix(userID, userID, 0, maxIndex, p_u);
+					// p_u.plusEquals(q_i.timesEquals(LRtE).minus(p_u.times(LRtRP)));
+					// p.setMatrix(userID, userID, 0, maxIndex, p_u);
 					for (int f = 0; f < maxIndex; f++) {
-						p.set(userID, f, p_u.get(0, f) + q_i.get(0, f) * LRtE - p_u.get(0,  f) * LRtRP);
+						p.set(userID, f, p_u.get(0, f) + LRtE * q_i.get(0, f) - LRtRP * p_u.get(0,  f));
 					}
 
 					// Update y
 					// y_j = y_j + q_i * LEARNING_RATE * err * N - LEARNING_RATE * REG_PENALTY * y_j
-					q_i.timesEquals(N);
+					q_i.timesEquals(LRtE * N);
 					for (RateUnit ru : N_list) {
 						int movie = ru.getID();
 
 						for (int f = 0; f < maxIndex; f++) {
-							y.set(movie, f, 
-									y.get(movie, f) + q_i.get(0, f) - (LRtRP * y.get(movie, f)));
+							y.set(movie, f, y.get(movie, f) + q_i.get(0, f) - LRtRP * y.get(movie, f));
 						}
 					}
 				}
 
 				// Print finished
-				dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-				date = new Date();
-				System.out.println("Epoch complete at: " + dateFormat.format(date));
-				
+				System.out.println("Epoch ended at: " + dateFormat.format(new Date()));
+
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
