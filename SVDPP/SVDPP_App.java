@@ -125,8 +125,13 @@ public class SVDPP_App {
 		for (int i = 0; i < NUM_MOVIES; i++) {
 			for (int j = 0; j < NUM_FEATURES; j++) {
 				q.getArray()[i][j] = -0.001 + 0.002 * r.nextDouble();
-				p.getArray()[i][j] = -0.001 + 0.002 * r.nextDouble();
 				y.getArray()[i][j] = -0.001 + 0.002 * r.nextDouble();
+			}
+		}
+		
+		for (int i = 0; i < NUM_USERS; i++) {
+			for (int j = 0; j < NUM_FEATURES; j++) {
+				p.getArray()[i][j] = -0.001 + 0.002 * r.nextDouble();
 			}
 		}
 
