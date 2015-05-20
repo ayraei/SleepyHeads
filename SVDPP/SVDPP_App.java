@@ -42,7 +42,7 @@ public class SVDPP_App {
 	public static int NUM_FEATURES = 20;
 	public static int NUM_MOVIES = 17770;
 	public static Matrix q = new Matrix(NUM_MOVIES, NUM_FEATURES);    // auto initializes to zero
-	public static Matrix p = new Matrix(NUM_MOVIES, NUM_FEATURES);
+	public static Matrix p = new Matrix(NUM_USERS, NUM_FEATURES);
 	public static Matrix y = new Matrix(NUM_MOVIES, NUM_FEATURES);
 
 	/** Checking progress **/
