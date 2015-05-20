@@ -191,7 +191,7 @@ public class SVDPP_App {
 					Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
 					Matrix p_u = p.getMatrix(userID, userID, 0, maxIndex);
 					Matrix y_sum = new Matrix(1, NUM_FEATURES);					
-
+// Calculate y_sum (sum of all the ratings from a user)
 					for (RateUnit ru : N_list) {
 						int movie = ru.getID();
 
@@ -218,12 +218,12 @@ public class SVDPP_App {
 
 					// Update p
 					// p_u = p_u + LEARNING_RATE * err * q_i - LEARNING_RATE * REG_PENALTY * p_u
-					p_u.plusEquals(q_i.times(LRtE).minus(p_u.times(LRtRP)));
+					p_u.plusEquals(q_i.timesEquals(LRtE).minus(p_u.times(LRtRP)));
 					p.setMatrix(userID, userID, 0, maxIndex, p_u);
 
 					// Update y
 					// y_j = y_j + q_i * LEARNING_RATE * err * N - LEARNING_RATE * REG_PENALTY * y_j
-					q_i.timesEquals(LRtE * N);
+					q_i.timesEquals(N);
 					for (RateUnit ru : N_list) {
 						int movie = ru.getID();
 
