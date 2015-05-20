@@ -120,7 +120,7 @@ public class SVDPP_App {
 		// Initialize constant matrices
 		arrayManager.initConstants();
 
-		// Initialize q matrix to -0.001 to 0.001
+		// Initialize matrices to -0.001 to 0.001
 		Random r = new Random();
 		for (int i = 0; i < NUM_MOVIES; i++) {
 			for (int j = 0; j < NUM_FEATURES; j++) {
@@ -128,7 +128,7 @@ public class SVDPP_App {
 				y.getArray()[i][j] = -0.001 + 0.002 * r.nextDouble();
 			}
 		}
-		
+
 		for (int i = 0; i < NUM_USERS; i++) {
 			for (int j = 0; j < NUM_FEATURES; j++) {
 				p.getArray()[i][j] = -0.001 + 0.002 * r.nextDouble();
@@ -154,80 +154,81 @@ public class SVDPP_App {
 			e.printStackTrace();
 			System.exit(-1);
 		}
-		
+
+		// Constants
 		int maxIndex = NUM_FEATURES - 1;
-		
+		double LRtRP = LEARNING_RATE * REG_PENALTY;
+
 		// Create buffered reader for getting reading in data
 		String lineTraining;
 		BufferedReader brTraining = null;
-		
+
 		// Run ASVD via stochastic gradient descent TODO: PARALLIZE UPDATES
 		for (int e = 0; e < NUM_EPOCHS; e++) {
 
 			// Print progress
-			System.out.println(e);
+			System.out.println("Epoch: " + e);
 
 			try {
 				brTraining = new BufferedReader(new FileReader(TRAIN_FILE_LOC));
 			} catch (FileNotFoundException e1) {
 				e1.printStackTrace();
 			}
-			
+
 			// Read in training data to memory
 			try {
 				while ((lineTraining = brTraining.readLine()) != null) {
-					
+
 					// Read in data as a string array, cast to Integers
 					String[] input = lineTraining.split("\\s+");
 					Integer userID = Integer.parseInt(input[0]) - 1;
 					Integer movieID = Integer.parseInt(input[1]) - 1;
 					Integer rating = Integer.parseInt(input[3]);
-					
+
 					// Set up
 					double N = arrayManager.getN(userID);
 					ArrayList<RateUnit> N_list = arrayManager.getUserHistory_N(userID);
 					Matrix q_i = q.getMatrix(movieID, movieID, 0, maxIndex);
 					Matrix p_u = p.getMatrix(userID, userID, 0, maxIndex);
 					Matrix y_sum = new Matrix(1, NUM_FEATURES);					
-					
+
 					for (RateUnit ru : N_list) {
 						int movie = ru.getID();
-						
+
 						for (int f = 0; f < maxIndex; f++) {
 							y_sum.set(0, f, y_sum.get(0, f) + y.get(movie, f));
 						}
 					}
 					y_sum.timesEquals(N);
-					
+
 					// Calculate error
-					double predictedRating = q_i.times((p_u.plus(y_sum)).transpose()).get(0, 0);
+					double predictedRating = q_i.times((y_sum.plusEquals(p_u)).transpose()).get(0, 0);
 					double err = rating - predictedRating;
 					if (movieID % 100 == 0) {
 						outperf.println(userID + " " + movieID + " " + rating + " " + err);
 						outperf.flush();
 					}
-					
+
 					double LRtE  = LEARNING_RATE * err;
-					double LRtRP = LEARNING_RATE * REG_PENALTY;
-					
+
 					// Update q
 					// q_i = q_i + LEARNING_RATE * err * (p_u + y_sum) - LEARNING_RATE * REG_PENALTY * q_i
-					q_i.plusEquals((p_u.plus(y_sum)).times(LRtE).minus(q_i.times(LRtRP)));
-					q.setMatrix(movieID, movieID, 0, maxIndex, q_i);
+					Matrix q_inew = q_i.plus(y_sum.timesEquals(LRtE).minusEquals(q_i.times(LRtRP)));
+					q.setMatrix(movieID, movieID, 0, maxIndex, q_inew);
 
 					// Update p
 					// p_u = p_u + LEARNING_RATE * err * q_i - LEARNING_RATE * REG_PENALTY * p_u
 					p_u.plusEquals(q_i.times(LRtE).minus(p_u.times(LRtRP)));
 					p.setMatrix(userID, userID, 0, maxIndex, p_u);
-					
+
 					// Update y
 					// y_j = y_j + q_i * LEARNING_RATE * err * N - LEARNING_RATE * REG_PENALTY * y_j
-					Matrix c = q_i.times(LRtE * N);
+					q_i.timesEquals(LRtE * N);
 					for (RateUnit ru : N_list) {
 						int movie = ru.getID();
-						
+
 						for (int f = 0; f < maxIndex; f++) {
-							y.set(movie, f, y.get(movie, f) + c.get(0, f) - (LRtRP * y.get(movie, f)));
+							y.set(movie, f, y.get(movie, f) + q_i.get(0, f) - (LRtRP * y.get(movie, f)));
 						}
 					}
 				}
@@ -235,6 +236,8 @@ public class SVDPP_App {
 				e1.printStackTrace();
 			}
 		}
+
+		outperf.close();
 
 		// Delete if output file already exist, otherwise will append to file
 		try{
@@ -292,7 +295,6 @@ public class SVDPP_App {
 
 		System.out.println("done making predictions!\n");
 		out.close();
-		outperf.close();
 	}
 
 
@@ -306,35 +308,16 @@ public class SVDPP_App {
 		int max = NUM_FEATURES - 1;
 		Matrix q_i = q.getMatrix(movieID, movieID, 0, max);
 		Matrix y_sum = new Matrix(1, NUM_FEATURES);
-		
+
 		for (RateUnit nu : userTestRatings) {
 			int movie = nu.getID();
 			y_sum.plusEquals(y.getMatrix(movie, movie, 0, max));
 		}
 		y_sum.times(N);
-		
+
 		Matrix ans = q_i.arrayTimes((p.getMatrix(userID, userID, 0, max).plus(y_sum)).transpose());
-		
+
 		return ans.get(0, 0);
-	}
-
-	/** Return the sum of arrays **/
-	public static double getSum_D(double[][] arr) {
-		double sum = 0;
-		for (int i = 0; i < arr.length; i++) {
-			sum += arr[0][i];
-		}
-
-		return sum;
-	}
-
-	public static int getSum_R(ArrayList<RateUnit> arr) {
-		int sum = 0;
-		for (RateUnit ru : arr) {
-			sum += ru.getRating();
-		}
-
-		return sum;
 	}
 
 }
