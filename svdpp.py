@@ -1,5 +1,6 @@
 import numpy as np
 import datetime as dt
+from numba import jit
 import math
 
 # Constants
@@ -57,6 +58,7 @@ class ArrayManager:
                 self.sums[i] += pair[1]
 
 # Initialization
+@jit
 def init(arrayManager):
     f_train = open(TRAIN_FILE_LOC, 'r');
     for count, line in enumerate(f_train):
@@ -87,6 +89,7 @@ def init(arrayManager):
 
     arrayManager.initConstants()
 
+@jit
 def predictedRating(arrayManager, userID, movieID):
     N = arrayManager.getN(userID)
     N_list = arrayManager.getUserHistory_N(userID)
@@ -103,37 +106,33 @@ def predictedRating(arrayManager, userID, movieID):
     # r hat = q[movie] * (pu + N * sum(yj))
     return (q_i * (y_sum + p_u))[0];
 
-
 # Program entry point
+@jit
 def main():
-
     # Initialize q, p, y
     q = 0.001 * np.random.randn(NUM_MOVIES, NUM_FEATURES)
     p = 0.001 * np.random.randn(NUM_USERS,  NUM_FEATURES)
     y = 0.001 * np.random.randn(NUM_MOVIES, NUM_FEATURES)
+    LRtRP = LEARNING_RATE * REG_PENALTY
 
     # Initialize everything else
-    print "Start: %s" % str(dt.datetime.now().time())
+    print "\nInitialization started at time: %s" % str(dt.datetime.now().time())
     arrayManager = ArrayManager()
     init(arrayManager)
-    print "Initialization complete at time %s \n" % str(dt.datetime.now().time())
+    print "Initialization complete at time: %s \n" % str(dt.datetime.now().time())
 
-    # File prep
-    f_perf  = open(OUTPUT_PERF_LOC, 'w')
     f_train = open(TRAIN_FILE_LOC,  'r')
+    f_perf  = open(OUTPUT_PERF_LOC, 'w')
 
     # SGD
     for e in range(0, NUM_EPOCHS):
 
-        LRtRP = LEARNING_RATE * REG_PENALTY
-        print "Epoch %d start: %s \n" % (e, str(dt.datetime.now().time()))
-
+        print "Epoch %d start: %s" % (e, str(dt.datetime.now().time()))
         for count, line in enumerate(f_train):
 
             # Print progress through file
             if count % 10000000 == 0:
-                print count
-                print "%s \n" % str(dt.datetime.now().time())
+                print "line %d at time: %s" % (count, str(dt.datetime.now().time()))
 
             # Get training data
             lineArray = line.split()
@@ -159,8 +158,9 @@ def main():
             LRtE = LEARNING_RATE * err
 
             # Print out performance
-            if count % 100 == 0:
+            if count % 10000000 == 0:
                 f_perf.write("%d %d %d %f \n" % (userID, movieID, rating, err))
+                f_perf.flush()
 
             # Update q
             # q_i = q_i + LEARNING_RATE * err * (p_u + y_sum) - LEARNING_RATE * REG_PENALTY * q_i
@@ -175,7 +175,6 @@ def main():
             y[movieID, 0:] += LRtE * N * q_i - LRtRP * y[movieID, 0:]
 
         print "Epoch %d ended: %s \n" % (e, str(dt.datetime.now().time()))
-        LEARNING_RATE *= 0.9;
 
     f_perf.close()
     f_train.close()
@@ -196,7 +195,8 @@ def main():
         movieID = int(lineArray[1]) - 1
         prediction = predictedRating(arrayManager, userID, movieID)
 
-        f_out("%.3f \n" % prediction)
+        f_out.write("%.3f \n" % prediction)
+        f_out.flush()
 
     f_test.close()
     f_out.close()
