@@ -194,7 +194,21 @@ def main():
         lineArray = line.split()
         userID  = int(lineArray[0]) - 1
         movieID = int(lineArray[1]) - 1
-        prediction = predictedRating(arrayManager, userID, movieID)
+
+        N = arrayManager.getN(userID)
+        N_list = arrayManager.getUserHistory_N(userID)
+        q_i = q[movieID, 0:]
+        p_u = p[userID, 0:]
+        y_sum = np.zeros(NUM_FEATURES)
+
+        # Calculate y_sum (sum of all the ratings from a user)
+        for pair in N_list:
+            movie = pair[0]
+            y_sum += y[movie, 0:]
+        y_sum *= N
+
+        # Calculate error
+        prediction  = (q_i * (y_sum + p_u))[0]
 
         f_out.write("%.3f \n" % prediction)
         f_out.flush()
