@@ -11,7 +11,7 @@ NUM_FEATURES = 20
 # Run parameters
 LEARNING_RATE = 0.001
 REG_PENALTY   = 0.015
-NUM_EPOCHS    = 1
+NUM_EPOCHS    = 18
 
 # Location of input files 
 TRAIN_FILE_LOC = '/Users/debbie1/Documents/NetflixData/mu_sorted/trainingAll.dta'
