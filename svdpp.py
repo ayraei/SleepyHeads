@@ -11,7 +11,7 @@ NUM_FEATURES = 20
 # Run parameters
 LEARNING_RATE = 0.001
 REG_PENALTY   = 0.015
-NUM_EPOCHS    = 2
+NUM_EPOCHS    = 1
 
 # Location of input files 
 TRAIN_FILE_LOC = '/Users/debbie1/Documents/NetflixData/mu_sorted/trainingAll.dta'
@@ -60,7 +60,7 @@ class ArrayManager:
 # Initialization
 @jit
 def init(arrayManager):
-    f_train = open(TRAIN_FILE_LOC, 'r');
+    f_train = open(TRAIN_FILE_LOC, 'r')
     for count, line in enumerate(f_train):
         if count % 10000000 == 0:
             print count
@@ -74,7 +74,7 @@ def init(arrayManager):
         arrayManager.add(userID, movieID, rating)
     f_train.close()
 
-    f_test  = open(TEST_FILE_LOC, 'r');
+    f_test  = open(TEST_FILE_LOC, 'r')
     for count, line in enumerate(f_test):
         if count % 500000 == 0:
             print count
@@ -121,13 +121,14 @@ def main():
     init(arrayManager)
     print "Initialization complete at time: %s \n" % str(dt.datetime.now().time())
 
-    f_train = open(TRAIN_FILE_LOC,  'r')
     f_perf  = open(OUTPUT_PERF_LOC, 'w')
 
     # SGD
     for e in range(0, NUM_EPOCHS):
 
+        f_train = open(TRAIN_FILE_LOC,  'r')
         print "Epoch %d start: %s" % (e, str(dt.datetime.now().time()))
+
         for count, line in enumerate(f_train):
 
             # Print progress through file
@@ -175,12 +176,12 @@ def main():
             y[movieID, 0:] += LRtE * N * q_i - LRtRP * y[movieID, 0:]
 
         print "Epoch %d ended: %s \n" % (e, str(dt.datetime.now().time()))
+        f_train.close()
 
     f_perf.close()
-    f_train.close()
 
     # Write out predictions
-    f_test = open(TEST_FILE_LOC, 'w')
+    f_test = open(TEST_FILE_LOC, 'r')
     f_out  = open(OUTPUT_PREDICT_LOC, 'w')
 
     for count, line in enumerate(f_test):
@@ -198,6 +199,7 @@ def main():
         f_out.write("%.3f \n" % prediction)
         f_out.flush()
 
+    print "Printing complete!"
     f_test.close()
     f_out.close()
 
