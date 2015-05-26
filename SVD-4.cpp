@@ -16,7 +16,7 @@ using namespace std;
 
 #define NUM_MOVIES 17770
 #define NUM_USERS 458293
-#define NUM_FEATURES 10
+#define NUM_FEATURES 25
 //#define NUM_TOTAL_PTS 102416306
 //#define NUM_TEST_PTS 2749898
 #define MU 0.0   // Baseline thing
@@ -37,15 +37,15 @@ void init()
   // Initialize random seed
   srand(time(NULL));
 
-  for (int f = 0; f < NUM_FEATURES; f++)
-    for (int u = 0; u < NUM_USERS; u++)
+  for (int u = 0; u < NUM_USERS; u++)
+    for (int f = 0; f < NUM_FEATURES; f++)
       {
 	//users_f_[f][u] = ( (double)rand() / (double)RAND_MAX ) * 0.002 - 0.001;
 	users_f_[f][u] = ( (double)rand() / (double)RAND_MAX );
       }
 
-  for (int f = 0; f < NUM_FEATURES; f++)
-    for (int m = 0; m < NUM_MOVIES; m++)
+  for (int m = 0; m < NUM_MOVIES; m++)
+    for (int f = 0; f < NUM_FEATURES; f++)
       {
 	movies_f_[f][m] = ( (double)rand() / (double)RAND_MAX );
       }
@@ -57,10 +57,9 @@ double predictRating(int movie, int user)
   for (int f = 0; f < NUM_FEATURES; f++)
     {
       //std::cout << prediction << " " << users_f_[f][user] << " " << movies_f_[f][movie] << " " << users_f_[f][user] * movies_f_[f][movie] << std::endl;
-      prediction += users_f_[f][user] * movies_f_[f][movie];
+      prediction += users_f_[user][f] * movies_f_[movie][f];
     }
   
-  //return userValue[user] * movieValue[movie];
   return prediction;
 }
 
@@ -68,7 +67,8 @@ void predict(const char* filename)
 {
   std::cout << "Predicting on " << filename << std::endl;
   int u, m, date_num, rating;
-  double prediction= 0.0;
+  double prediction = 0.0;
+  double error = 0.0;
 
   // Outfile
   ofstream outfile;
@@ -83,7 +83,7 @@ void predict(const char* filename)
     prediction = 0.0;
     for (int f = 0; f < NUM_FEATURES; f++)
       {
-	prediction += users_f_[f][u] * movies_f_[f][m];
+	prediction += users_f_[u][f] * movies_f_[m][f];
 	//std::cout << users_f_[f][u] << " " << movies_f_[f][m] << " " << prediction << std::endl;
       }
 		
@@ -92,7 +92,7 @@ void predict(const char* filename)
 
   outfile.close();
   
-  // Simulatenously calculate cumulative 
+  // Simulatenously calculate cumulative error
 }
 
 int main()
@@ -101,7 +101,9 @@ int main()
   double err;
   int u, m, date_num;
   double rating;
+  double error = 0.0;
   const char* filename = "training.dta";
+  std::cout << "Training on " << filename << std::endl;
   
   // Initialize
   init();
@@ -110,12 +112,12 @@ int main()
   for (int e = 0; e < NUM_EPOCHS; e++)
     {
       std::cout << "Epoch " << e << std::endl;
+      error = 0.0;
       // TODO: Pick some random ordering of the points
       // Pick some random ordering of the users and movies
 
       // For each point in the dataset
       // Open file
-      std::cout << "Reading in data from " << filename << std::endl;
       std::ifstream infile(filename);
 
       // Update values
@@ -125,28 +127,21 @@ int main()
 	  for (int f = 0; f < NUM_FEATURES; f++)
 	    {
 	      //std::cout << "Before: " << users_f_[f][u] << " " << movies_f_[f][m] << std::endl;
-	      userValue = users_f_[f];
-	      movieValue = movies_f_[f];
+	      userValue = users_f_[u];
+	      movieValue = movies_f_[m];
 	      
-	      err = LRATE * (rating - predictRating(m, u));
+	      err = LRATE * ( rating - predictRating(m, u) );
 	      //std::cout << err << std::endl;
 	      
-	      userValue[u] += err * movieValue[m] - LAMBDA * userValue[u];
-	      movieValue[m] += err * userValue[u] - LAMBDA * movieValue[m];
+	      userValue[f] += err * movieValue[f] - LAMBDA * userValue[f];
+	      movieValue[f] += err * userValue[f] - LAMBDA * movieValue[f];
 	      //std::cout << "After: " << users_f_[f][u] << " " << movies_f_[f][m] << std::endl << std::endl;
+
+	      error += rating - predictRating(m, u);
 	    }
 	}
-      
-	  /*for (int u = 0; u < NUM_USERS; u++)
-	    {
-	      for (int m = 0; m < NUM_MOVIES; m++)
-		{
-		  err = LRATE * ( ratings_[u][m] - predictRating(m, u) )^2;
-		  
-		  users_f_[f][u] += err * movieValue[m] - LAMBDA * userValue[u];
-		  movies_f_[f][m] += err * userValue[u] - LAMBDA * movieValue[m];
-		}
-		}*/
+
+      std::cout << "Error: " << error << std::endl;
     }
 
   predict("probe.dta");
